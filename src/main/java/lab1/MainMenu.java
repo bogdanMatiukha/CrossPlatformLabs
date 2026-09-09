@@ -1,17 +1,53 @@
 package lab1;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import java.util.Scanner;
+
 public class MainMenu {
     public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("\n===== MENU =====");
+            System.out.println("1 - Task 1");
+            System.out.println("2 - Task 2");
+            System.out.println("3 - Task 3");
+            System.out.println("4 - Task 4");
+            System.out.println("5 - Task 5");
+            System.out.println("0 - Exit");
+            System.out.print("Choose program: ");
+
+            int choice = scanner.nextInt();
+
+            switch (choice) {
+                case 1:
+                    Task1.run();
+                    break;
+
+                case 2:
+                    Task2.run();
+                    break;
+
+                case 3:
+                    Task3.run();
+                    break;
+
+                case 4:
+                    Task4.run();
+                    break;
+
+                case 5:
+                    Task5.run();
+                    break;
+
+                case 0:
+                    System.out.println("Program finished.");
+                    scanner.close();
+                    return;
+
+                default:
+                    System.out.println("Wrong choice!");
+            }
         }
     }
 }
