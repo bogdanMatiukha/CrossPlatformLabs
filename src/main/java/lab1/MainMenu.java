@@ -8,7 +8,7 @@ public class MainMenu {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
-            System.out.println("\n===== MENU =====");
+            System.out.println("\n------MENU-----");
             System.out.println("1 - Task 1");
             System.out.println("2 - Task 2");
             System.out.println("3 - Task 3");
@@ -17,27 +17,33 @@ public class MainMenu {
             System.out.println("0 - Exit");
             System.out.print("Choose program: ");
 
+            if (!scanner.hasNextInt()) {
+                System.out.println("Error: enter a number from 0 to 5.");
+                scanner.nextLine();
+                continue;
+            }
+
             int choice = scanner.nextInt();
 
             switch (choice) {
                 case 1:
-                    Task1.run();
+                    Task1.run(scanner);
                     break;
 
                 case 2:
-                    Task2.run();
+                    Task2.run(scanner);
                     break;
 
                 case 3:
-                    Task3.run();
+                    Task3.run(scanner);
                     break;
 
                 case 4:
-                    Task4.run();
+                    Task4.run(scanner);
                     break;
 
                 case 5:
-                    Task5.run();
+                    Task5.run(scanner);
                     break;
 
                 case 0:
@@ -46,7 +52,7 @@ public class MainMenu {
                     return;
 
                 default:
-                    System.out.println("Wrong choice!");
+                    System.out.println("Error: Choose a number from 0 to 5.");
             }
         }
     }
