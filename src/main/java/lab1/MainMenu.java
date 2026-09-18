@@ -3,6 +3,7 @@ package lab1;
 import java.util.Scanner;
 
 public class MainMenu {
+
     public static void main(String[] args) {
 
         Scanner scanner = new Scanner(System.in);
@@ -14,11 +15,12 @@ public class MainMenu {
             System.out.println("3 - Task 3");
             System.out.println("4 - Task 4");
             System.out.println("5 - Task 5");
+            System.out.println("6 - Task 6");
             System.out.println("0 - Exit");
             System.out.print("Choose program: ");
 
             if (!scanner.hasNextInt()) {
-                System.out.println("Error: enter a number from 0 to 5.");
+                System.out.println("Error: enter a number from 0 to 6.");
                 scanner.nextLine();
                 continue;
             }
@@ -46,13 +48,17 @@ public class MainMenu {
                     Task5.run(scanner);
                     break;
 
+                case 6:
+                    Task6.run(scanner);
+                    break;
+
                 case 0:
                     System.out.println("Program finished.");
                     scanner.close();
                     return;
 
                 default:
-                    System.out.println("Error: Choose a number from 0 to 5.");
+                    System.out.println("Error: Choose a number from 0 to 6.");
             }
         }
     }

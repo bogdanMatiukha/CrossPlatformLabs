@@ -6,64 +6,53 @@ public class Task3 {
 
     public static void run(Scanner scanner) {
 
-        double x1;
-        double y1;
-        double x2;
-        double y2;
+        int day;
 
         while (true) {
-            System.out.print("Enter x1: ");
+            System.out.print("Enter day number (1-7): ");
 
-            if (scanner.hasNextDouble()) {
-                x1 = scanner.nextDouble();
-                break;
+            if (scanner.hasNextInt()) {
+                day = scanner.nextInt();
+
+                if (day >= 1 && day <= 7) {
+                    break;
+                }
+
+                System.out.println("Error: Enter a number from 1 to 7.");
+            } else {
+                System.out.println("Error: Enter an integer.");
+                scanner.next();
             }
-
-            System.out.println("Error: enter a number.");
-            scanner.next();
         }
 
-        while (true) {
-            System.out.print("Enter y1: ");
-
-            if (scanner.hasNextDouble()) {
-                y1 = scanner.nextDouble();
+        switch (day) {
+            case 1:
+                System.out.println("Monday");
                 break;
-            }
 
-            System.out.println("Error: Enter a number.");
-            scanner.next();
-        }
-
-        while (true) {
-            System.out.print("Enter x2: ");
-
-            if (scanner.hasNextDouble()) {
-                x2 = scanner.nextDouble();
+            case 2:
+                System.out.println("Tuesday");
                 break;
-            }
 
-            System.out.println("Error: Enter a number.");
-            scanner.next();
-        }
-
-        while (true) {
-            System.out.print("Enter y2: ");
-
-            if (scanner.hasNextDouble()) {
-                y2 = scanner.nextDouble();
+            case 3:
+                System.out.println("Wednesday");
                 break;
-            }
 
-            System.out.println("Error: enter a number.");
-            scanner.next();
+            case 4:
+                System.out.println("Thursday");
+                break;
+
+            case 5:
+                System.out.println("Friday");
+                break;
+
+            case 6:
+                System.out.println("Saturday");
+                break;
+
+            case 7:
+                System.out.println("Sunday");
+                break;
         }
-
-        double distance = Math.sqrt(
-                Math.pow(x2 - x1, 2) +
-                        Math.pow(y2 - y1, 2)
-        );
-
-        System.out.println("Distance = " + distance);
     }
 }

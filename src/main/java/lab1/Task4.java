@@ -6,22 +6,26 @@ public class Task4 {
 
     public static void run(Scanner scanner) {
 
-        int a;
+        double number;
 
         while (true) {
-            System.out.print("Enter a: ");
+            System.out.print("Enter number: ");
 
-            if (scanner.hasNextInt()) {
-                a = scanner.nextInt();
+            if (scanner.hasNextDouble()) {
+                number = scanner.nextDouble();
                 break;
             }
 
-            System.out.println("Error: Enter an integer.");
+            System.out.println("Error: Enter a number.");
             scanner.next();
         }
 
-        int result = a * a * a * a * a * a * a;
-
-        System.out.println("a^7 = " + result);
+        if (number > 0) {
+            System.out.println("positive");
+        } else if (number < 0) {
+            System.out.println("negative");
+        } else {
+            System.out.println("zero");
+        }
     }
 }

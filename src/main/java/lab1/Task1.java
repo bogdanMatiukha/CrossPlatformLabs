@@ -14,19 +14,19 @@ public class Task1 {
             if (scanner.hasNextDouble()) {
                 x = scanner.nextDouble();
 
-                if (2 * x + 1 >= 0) {
+                if (x != 0) {
                     break;
                 }
 
-                System.out.println("Error: The number must be greater than 0.");
+                System.out.println("Error: x must not be 0.");
             } else {
                 System.out.println("Error: Enter a number.");
                 scanner.next();
             }
         }
 
-        double y = Math.sqrt(2 * x + 1);
+        double result = x * x * x;
 
-        System.out.println("y = " + y);
+        System.out.println("x^3 = " + result);
     }
 }

@@ -6,13 +6,14 @@ public class Task5 {
 
     public static void run(Scanner scanner) {
 
-        int N;
+        int a;
+        int b;
 
         while (true) {
-            System.out.print("Enter N: ");
+            System.out.print("Enter a: ");
 
             if (scanner.hasNextInt()) {
-                N = scanner.nextInt();
+                a = scanner.nextInt();
                 break;
             }
 
@@ -20,10 +21,30 @@ public class Task5 {
             scanner.next();
         }
 
-        if (N % 10 == 0) {
-            System.out.println("Number " + N + " is divisible by 10");
-        } else {
-            System.out.println("Number " + N + " is not divisible by 10");
+        while (true) {
+            System.out.print("Enter b: ");
+
+            if (scanner.hasNextInt()) {
+                b = scanner.nextInt();
+                break;
+            }
+
+            System.out.println("Error: Enter an integer.");
+            scanner.next();
         }
+
+        if (a > b) {
+            int temp = a;
+            a = b;
+            b = temp;
+        }
+
+        int sum = 0;
+
+        for (int i = a; i <= b; i++) {
+            sum += i;
+        }
+
+        System.out.println("Sum = " + sum);
     }
 }
