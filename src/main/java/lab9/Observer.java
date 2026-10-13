@@ -1,4 +1,5 @@
 package lab9;
 
-public class Observer {
+public interface Observer {
+    void update(String condition);
 }
