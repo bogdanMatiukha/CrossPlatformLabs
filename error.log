@@ -1,0 +1,7 @@
+2026-10-13T11:07:34.311635400 | NoSuchFileException | students.csv | Record: Input file: students.csv
+2026-10-13T11:08:25.946601700 | NumberFormatException | For input string: "abc" | Record: S004;abc;75;80
+2026-10-13T11:08:25.962602 | InvalidScoreException | Оцінка повинна бути в діапазоні 0–100: 110.0 | Record: S005;110;80;90
+2026-10-13T11:08:25.963601300 | NumberFormatException | For input string: "bad" | Record: S007;50;bad;60
+2026-10-13T11:55:17.188481 | NumberFormatException | For input string: "abc" | Record: S004;abc;75;80
+2026-10-13T11:55:17.204993100 | InvalidScoreException | The score must be between 0 and 100: 110.0 | Record: S005;110;80;90
+2026-10-13T11:55:17.204993100 | NumberFormatException | For input string: "bad" | Record: S007;50;bad;60
