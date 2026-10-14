@@ -1,4 +1,4 @@
-package lab10.model;
+package lab11.model;
 
 public class Project {
     private final int id;
@@ -11,6 +11,10 @@ public class Project {
         this.name = name;
         this.manager = manager;
         this.duration = duration;
+    }
+
+    public Project(String name, String manager, int duration) {
+        this(0, name, manager, duration);
     }
 
     public int getId() {
