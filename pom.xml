@@ -5,9 +5,9 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>lab11</groupId>
-    <artifactId>lab11-projects-mysql</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <groupId>myapp</groupId>
+    <artifactId>myapp</artifactId>
+    <version>1.0</version>
 
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
@@ -51,9 +51,10 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>lab11.app.Main</mainClass>
+                    <mainClass>lab11.app.App</mainClass>
                 </configuration>
             </plugin>
+            
         </plugins>
     </build>
 </project>
