@@ -3,13 +3,21 @@ package lab11.service;
 import lab11.dao.ProjectDAO;
 import lab11.dao.ProjectDAOImpl;
 import lab11.model.Project;
-
 import java.util.List;
 
 public class ProjectService {
     private final ProjectDAO dao = new ProjectDAOImpl();
 
     public void addProject(Project project) {
+        if (project == null) {
+            throw new IllegalArgumentException("Project cannot be null");
+        }
+        if (project.getName() == null || project.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Project name cannot be empty");
+        }
+        if (project.getDuration() <= 0) {
+            throw new IllegalArgumentException("Duration must be greater than zero");
+        }
         dao.add(project);
     }
 
@@ -18,6 +26,9 @@ public class ProjectService {
     }
 
     public void updateProject(Project project) {
+        if (project == null) {
+            throw new IllegalArgumentException("Project cannot be null");
+        }
         dao.update(project);
     }
 
