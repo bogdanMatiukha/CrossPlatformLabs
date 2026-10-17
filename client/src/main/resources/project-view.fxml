@@ -13,7 +13,7 @@
 <VBox spacing="12"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="lab11.controller.MainController"
+      fx:controller="main.controller.MainController"
       stylesheets="@styles.css">
 
     <padding>
