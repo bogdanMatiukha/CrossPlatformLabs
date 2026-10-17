@@ -1,39 +1,26 @@
 package lab11.controller;
 
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
+import lab11.client.HttpProjectClient;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import lab11.model.Project;
-import lab11.service.ProjectService;
 
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class MainController {
+    private static final Logger logger = Logger.getLogger(MainController.class.getName());
 
-    private final ProjectService service = new ProjectService();
-
-    private static final Logger logger =
-            Logger.getLogger(MainController.class.getName());
-
-    @FXML private TableView<Project> table;
-    @FXML private TableColumn<Project, Number> idCol;
-    @FXML private TableColumn<Project, String> nameCol;
-    @FXML private TableColumn<Project, String> managerCol;
-    @FXML private TableColumn<Project, Number> durationCol;
+    @FXML private TableView<Project> tableView;
+    @FXML private TableColumn<Project, Integer> idColumn;
+    @FXML private TableColumn<Project, String> nameColumn;
+    @FXML private TableColumn<Project, String> managerColumn;
+    @FXML private TableColumn<Project, Integer> durationColumn;
 
     @FXML private TextField nameField;
     @FXML private TextField managerField;
@@ -41,10 +28,9 @@ public class MainController {
 
     @FXML private ComboBox<String> fieldComboBox;
     @FXML private TextField filterField;
-
-    @FXML private Button validateButton;
-    @FXML private ProgressBar progressBar;
     @FXML private Label statusLabel;
+
+    private final HttpProjectClient client = new HttpProjectClient();
 
     private final Map<String, String> fieldMap = Map.of(
             "ID", "id",
@@ -55,111 +41,86 @@ public class MainController {
 
     @FXML
     public void initialize() {
-        idCol.setCellValueFactory(cell ->
-                new SimpleIntegerProperty(cell.getValue().getId()));
+        logger.info("Initializing MainController...");
 
-        nameCol.setCellValueFactory(cell ->
-                new SimpleStringProperty(cell.getValue().getName()));
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        managerColumn.setCellValueFactory(new PropertyValueFactory<>("manager"));
+        durationColumn.setCellValueFactory(new PropertyValueFactory<>("duration"));
 
-        managerCol.setCellValueFactory(cell ->
-                new SimpleStringProperty(cell.getValue().getManager()));
+        if (fieldComboBox != null) {
+            fieldComboBox.setItems(FXCollections.observableArrayList(
+                    "ID", "Назва", "Керівник", "Тривалість"
+            ));
+            fieldComboBox.getSelectionModel().select("Назва");
+        }
 
-        durationCol.setCellValueFactory(cell ->
-                new SimpleIntegerProperty(cell.getValue().getDuration()));
+        tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, selected) -> {
+            if (selected != null) {
+                nameField.setText(selected.getName());
+                managerField.setText(selected.getManager());
+                durationField.setText(String.valueOf(selected.getDuration()));
+            }
+        });
 
-        fieldComboBox.setItems(FXCollections.observableArrayList(
-                "ID",
-                "Назва",
-                "Керівник",
-                "Тривалість"
-        ));
-
-        fieldComboBox.getSelectionModel().select("Назва");
-
-        table.getSelectionModel().selectedItemProperty().addListener(
-                (obs, oldProject, selectedProject) -> {
-                    if (selectedProject != null) {
-                        nameField.setText(selectedProject.getName());
-                        managerField.setText(selectedProject.getManager());
-                        durationField.setText(
-                                String.valueOf(selectedProject.getDuration())
-                        );
-                    }
-                }
-        );
-
-        refreshTable();
+        loadProjects();
     }
 
     @FXML
-    private void addProject() {
-        if (!validateFields()) {
-            return;
-        }
-
-        try {
-            Project project = new Project(
-                    nameField.getText().trim(),
-                    managerField.getText().trim(),
-                    Integer.parseInt(durationField.getText().trim())
-            );
-
-            service.addProject(project);
-            refreshTable();
-            clearFields();
-
-        } catch (RuntimeException e) {
-            showMessage(errorMessage(e));
-        }
+    private void handleRefresh() {
+        logger.info("User requested project list refresh");
+        loadProjects();
     }
 
     @FXML
-    private void updateProject() {
-        Project selected = table.getSelectionModel().getSelectedItem();
+    private void handleAdd() {
+        logger.info("User clicked Add Project");
+        Project project = readForm();
+        if (project == null) return;
+        runAction(() -> client.addProject(project), "Додавання...", "Проєкт успішно додано");
+    }
 
+    @FXML
+    private void handleUpdate() {
+        logger.info("User clicked Update Project");
+        Project selected = tableView.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            showMessage("Виберіть проєкт для редагування.");
+            statusLabel.setText("Оберіть проєкт для редагування");
             return;
         }
 
-        if (!validateFields()) {
+        String name = nameField.getText().trim();
+        String manager = managerField.getText().trim();
+
+        if (name.isEmpty() || manager.isEmpty()) {
+            statusLabel.setText("Заповніть назву проєкту та керівника");
             return;
         }
 
         try {
-            Project updated = new Project(
-                    selected.getId(),
-                    nameField.getText().trim(),
-                    managerField.getText().trim(),
-                    Integer.parseInt(durationField.getText().trim())
-            );
+            int duration = Integer.parseInt(durationField.getText().trim());
+            if (duration <= 0) {
+                statusLabel.setText("Тривалість має бути більшою за нуль");
+                return;
+            }
 
-            service.updateProject(updated);
-            refreshTable();
-            clearFields();
+            Project project = new Project(selected.getId(), name, manager, duration);
+            runAction(() -> client.updateProject(project), "Оновлення...", "Проєкт оновлено");
 
-        } catch (RuntimeException e) {
-            showMessage(errorMessage(e));
+        } catch (NumberFormatException e) {
+            statusLabel.setText("Тривалість має бути цілим числом");
         }
     }
 
     @FXML
-    private void deleteProject() {
-        Project selected = table.getSelectionModel().getSelectedItem();
-
+    private void handleDelete() {
+        logger.info("User clicked Delete Project");
+        Project selected = tableView.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            showMessage("Виберіть проєкт для видалення.");
+            statusLabel.setText("Оберіть проєкт для видалення");
             return;
         }
-
-        try {
-            service.deleteProject(selected.getId());
-            refreshTable();
-            clearFields();
-
-        } catch (RuntimeException e) {
-            showMessage(errorMessage(e));
-        }
+        runAction(() -> client.deleteProject(selected.getId()), "Видалення...", "Проєкт видалено");
     }
 
     @FXML
@@ -177,226 +138,114 @@ public class MainController {
         String value = filterField.getText().trim();
 
         if (selectedField == null || value.isEmpty()) {
-            showMessage("Оберіть поле та введіть значення для пошуку.");
+            statusLabel.setText("Оберіть поле та введіть значення для пошуку.");
             return;
         }
 
         try {
+            List<Project> all = client.getAllProjects();
             String dbField = fieldMap.get(selectedField);
 
-            var result = like
-                    ? service.filterLike(dbField, value)
-                    : service.filterExact(dbField, value);
+            List<Project> filtered = all.stream().filter(p -> {
+                String valStr = switch (dbField) {
+                    case "id" -> String.valueOf(p.getId());
+                    case "name" -> p.getName();
+                    case "manager" -> p.getManager();
+                    case "duration" -> String.valueOf(p.getDuration());
+                    default -> "";
+                };
+                if (like) {
+                    return valStr.toLowerCase().contains(value.toLowerCase());
+                } else {
+                    return valStr.equalsIgnoreCase(value);
+                }
+            }).collect(Collectors.toList());
 
-            table.setItems(FXCollections.observableArrayList(result));
-
-        } catch (RuntimeException e) {
-            showMessage(errorMessage(e));
+            tableView.setItems(FXCollections.observableArrayList(filtered));
+            statusLabel.setText("Знайдено записів: " + filtered.size());
+        } catch (Exception e) {
+            statusLabel.setText("Помилка фільтрації: " + e.getMessage());
         }
     }
 
     @FXML
     private void resetFilter() {
-        filterField.clear();
-        refreshTable();
+        if (filterField != null) filterField.clear();
+        loadProjects();
     }
 
-    @FXML
-    private void clearFields() {
+    private void loadProjects() {
+        Task<List<Project>> task = new Task<>() {
+            @Override
+            protected List<Project> call() {
+                updateMessage("Завантаження даних із сервера...");
+                return client.getAllProjects();
+            }
+        };
+        statusLabel.textProperty().bind(task.messageProperty());
+        task.setOnSucceeded(event -> {
+            statusLabel.textProperty().unbind();
+            tableView.setItems(FXCollections.observableArrayList(task.getValue()));
+            statusLabel.setText("Дані успішно завантажено");
+        });
+        task.setOnFailed(event -> {
+            statusLabel.textProperty().unbind();
+            statusLabel.setText("Помилка: " + task.getException().getMessage());
+        });
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void runAction(Runnable action, String startMessage, String successMessage) {
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() {
+                updateMessage(startMessage);
+                action.run();
+                return null;
+            }
+        };
+        statusLabel.textProperty().bind(task.messageProperty());
+        task.setOnSucceeded(event -> {
+            statusLabel.textProperty().unbind();
+            statusLabel.setText(successMessage);
+            clearForm();
+            loadProjects();
+        });
+        task.setOnFailed(event -> {
+            statusLabel.textProperty().unbind();
+            statusLabel.setText("Помилка: " + task.getException().getMessage());
+        });
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private Project readForm() {
+        String name = nameField.getText().trim();
+        String manager = managerField.getText().trim();
+        if (name.isEmpty() || manager.isEmpty()) {
+            statusLabel.setText("Заповніть назву проєкту та керівника");
+            return null;
+        }
+        try {
+            int duration = Integer.parseInt(durationField.getText().trim());
+            if (duration <= 0) {
+                statusLabel.setText("Тривалість має бути більшою за нуль");
+                return null;
+            }
+            return new Project(name, manager, duration);
+        } catch (NumberFormatException e) {
+            statusLabel.setText("Тривалість має бути цілим числом");
+            return null;
+        }
+    }
+
+    private void clearForm() {
         nameField.clear();
         managerField.clear();
         durationField.clear();
-        table.getSelectionModel().clearSelection();
-    }
-
-    private void refreshTable() {
-        try {
-            table.setItems(
-                    FXCollections.observableArrayList(
-                            service.getAllProjects()
-                    )
-            );
-        } catch (RuntimeException e) {
-            showMessage(errorMessage(e));
-        }
-    }
-
-    private boolean validateFields() {
-        if (nameField.getText().trim().isEmpty()
-                || managerField.getText().trim().isEmpty()
-                || durationField.getText().trim().isEmpty()) {
-            showMessage("Заповніть усі поля.");
-            return false;
-        }
-
-        try {
-            int duration = Integer.parseInt(durationField.getText().trim());
-
-            if (duration <= 0) {
-                showMessage("Тривалість має бути більшою за нуль.");
-                return false;
-            }
-
-        } catch (NumberFormatException e) {
-            showMessage("Тривалість повинна бути цілим числом.");
-            return false;
-        }
-
-        return true;
-    }
-
-    private String errorMessage(Throwable error) {
-        Throwable cause = error;
-
-        while (cause.getCause() != null) {
-            cause = cause.getCause();
-        }
-
-        return cause.getMessage() == null
-                ? "Сталася помилка під час роботи з базою даних."
-                : cause.getMessage();
-    }
-
-    private void showMessage(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Система обліку проєктів");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    private Task<List<Project>> createValidationTask() {
-        return new Task<>() {
-            @Override
-            protected List<Project> call() throws Exception {
-                logger.info("Project validation started");
-
-                updateMessage("Завантаження проєктів...");
-
-                List<Project> projects = service.getAllProjects();
-                int total = projects.size();
-                int errors = 0;
-
-                logger.info("Number of projects to validate: " + total);
-
-                if (total == 0) {
-                    updateProgress(1, 1);
-                    updateMessage("Проєктів для перевірки немає");
-                    logger.info("No projects to validate");
-                    return projects;
-                }
-
-                for (int i = 0; i < total; i++) {
-                    if (isCancelled()) {
-                        logger.info("Project validation cancelled");
-                        break;
-                    }
-
-                    Project project = projects.get(i);
-                    boolean invalid = false;
-
-                    if (project.getName() == null
-                            || project.getName().trim().isEmpty()) {
-                        logger.warning("Project ID=" + project.getId() + ": name is missing");
-                        invalid = true;
-                    }
-
-                    if (project.getManager() == null
-                            || project.getManager().trim().isEmpty()) {
-                        logger.warning("Project ID=" + project.getId() + ": manager is missing");
-                        invalid = true;
-                    }
-
-                    if (project.getDuration() <= 0) {
-                        logger.warning("Project ID=" + project.getId()  + ": invalid duration " + project.getDuration());
-                        invalid = true;
-                    }
-
-                    if (invalid) {
-                        errors++;
-                    }
-
-                    Thread.sleep(100);
-
-                    updateProgress(i + 1, total);
-                    updateMessage(
-                            "Перевірено " + (i + 1) + " із " + total
-                    );
-                }
-
-                logger.info(
-                        "Project validation completed. Checked: " + total
-                                + ", projects with errors: " + errors
-                );
-
-                return projects;
-            }
-        };
-    }
-
-    @FXML
-    private void handleValidateProjects() {
-        logger.info("User started project validation");
-
-        validateButton.setDisable(true);
-        progressBar.setProgress(0);
-
-        Task<List<Project>> task = createValidationTask();
-
-        progressBar.progressProperty().bind(task.progressProperty());
-        statusLabel.textProperty().bind(task.messageProperty());
-
-        task.setOnSucceeded(event -> {
-            progressBar.progressProperty().unbind();
-            statusLabel.textProperty().unbind();
-
-            table.setItems(
-                    FXCollections.observableArrayList(task.getValue())
-            );
-
-            progressBar.setProgress(1);
-            statusLabel.setText("Перевірку проєктів завершено");
-
-            validateButton.setDisable(false);
-            logger.info("Background task completed successfully");
-        });
-
-        task.setOnFailed(event -> {
-            progressBar.progressProperty().unbind();
-            statusLabel.textProperty().unbind();
-
-            progressBar.setProgress(0);
-            statusLabel.setText("Помилка перевірки");
-
-            validateButton.setDisable(false);
-
-            Throwable exception = task.getException();
-
-            logger.log(
-                    Level.SEVERE,
-                    "An error occurred during project validation",
-                    exception
-            );
-
-            showMessage(
-                    exception == null
-                            ? "Сталася помилка під час перевірки проєктів."
-                            : errorMessage(exception)
-            );
-        });
-
-        task.setOnCancelled(event -> {
-            progressBar.progressProperty().unbind();
-            statusLabel.textProperty().unbind();
-
-            progressBar.setProgress(0);
-            statusLabel.setText("Перевірку скасовано");
-
-            validateButton.setDisable(false);
-        });
-
-        Thread thread = new Thread(task, "ProjectValidationThread");
-        thread.setDaemon(true);
-        thread.start();
+        tableView.getSelectionModel().clearSelection();
     }
 }
