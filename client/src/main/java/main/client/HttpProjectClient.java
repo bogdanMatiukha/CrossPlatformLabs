@@ -1,7 +1,7 @@
-package lab11.client;
+package main.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lab11.model.Project;
+import main.model.Project;
 
 import java.net.URI;
 import java.net.URLEncoder;

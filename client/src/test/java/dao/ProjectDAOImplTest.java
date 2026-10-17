@@ -1,8 +1,8 @@
 package dao;
 
-import lab11.model.Project;
-import lab11.dao.ProjectDAOImpl;
-import lab11.dao.DBUtil;
+import main.model.Project;
+import main.dao.ProjectDAOImpl;
+import main.dao.DBUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

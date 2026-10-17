@@ -1,12 +1,12 @@
-package lab11.controller;
+package main.controller;
 
-import lab11.client.HttpProjectClient;
+import main.client.HttpProjectClient;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import lab11.model.Project;
+import main.model.Project;
 
 import java.util.List;
 import java.util.Map;

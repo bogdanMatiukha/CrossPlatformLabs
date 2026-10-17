@@ -1,7 +1,7 @@
 package service;
 
-import lab11.model.Project;
-import lab11.service.ProjectService;
+import main.model.Project;
+import main.service.ProjectService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.List;

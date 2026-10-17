@@ -1,8 +1,8 @@
-package lab11.service;
+package main.service;
 
-import lab11.dao.ProjectDAO;
-import lab11.dao.ProjectDAOImpl;
-import lab11.model.Project;
+import main.dao.ProjectDAO;
+import main.dao.ProjectDAOImpl;
+import main.model.Project;
 import java.util.List;
 
 public class ProjectService {

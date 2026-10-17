@@ -1,4 +1,4 @@
-package lab11.model;
+package main.model;
 
 public class Project {
     private int id;

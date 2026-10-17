@@ -1,4 +1,4 @@
-package lab11.app;
+package main.app;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

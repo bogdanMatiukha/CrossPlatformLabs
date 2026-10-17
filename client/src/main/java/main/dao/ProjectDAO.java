@@ -1,6 +1,6 @@
-package lab11.dao;
+package main.dao;
 
-import lab11.model.Project;
+import main.model.Project;
 
 import java.util.List;
 
