@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS issue_requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     property_id INT NOT NULL,
-    request_status VARCHAR(50) NOT NULL DEFAULT 'СТВОРЕНО',
+    request_status VARCHAR(50) NOT NULL DEFAULT 'Created',
     urgency_f1 INT DEFAULT 0,
     criticality_f2 INT DEFAULT 0,
     deficit_f3 INT DEFAULT 0,
@@ -32,8 +32,22 @@ CREATE TABLE IF NOT EXISTS issue_requests (
 CREATE TABLE IF NOT EXISTS transfer_records (
      id INT AUTO_INCREMENT PRIMARY KEY,
      request_id INT NOT NULL,
-                                                transfer_date DATE NOT NULL,
-                                                return_date DATE DEFAULT NULL,
-                                                notes TEXT,
-                                                FOREIGN KEY (request_id) REFERENCES issue_requests(id) ON DELETE CASCADE
+     transfer_date DATE NOT NULL,
+     return_date DATE DEFAULT NULL,
+     notes TEXT,
+     FOREIGN KEY (request_id) REFERENCES issue_requests(id) ON DELETE CASCADE
     ) ENGINE=InnoDB;
+
+INSERT INTO users (full_name, role, email) VALUES
+    ('Іван Петренко', 'Студент', 'i.petrenko@uni.edu'),
+    ('Ольга Коваленко', 'Викладач', 'o.kovalenko@uni.edu');
+
+INSERT INTO property_items (inventory_number, name, category, status_item) VALUES
+    ('INV-001', 'Проєктор Epson', 'Мультимедіа', 'Available'),
+    ('INV-002', 'Ноутбук Lenovo ThinkPad', 'Обчислювальна техніка', 'Available');
+
+INSERT INTO issue_requests (user_id, property_id, request_status, urgency_f1, criticality_f2, deficit_f3, integral_index) VALUES
+    (1, 1, 'Created', 80, 70, 50, (0.40*80 + 0.35*70 + 0.25*50));
+
+INSERT INTO transfer_records (request_id, transfer_date, return_date, notes) VALUES
+    (1, '2026-10-15', NULL, 'Видано для проведення лабораторної роботи');

@@ -1,0 +1,4 @@
+inventory_number,name,category,status_item
+INV-101,Цифровий мультиметр,Вимірювальні прилади,Available
+INV-102,Осцилограф цифровий,Вимірювальні прилади,Available
+INV-103,Паяльна станція,Обладнання майстерень,Available
