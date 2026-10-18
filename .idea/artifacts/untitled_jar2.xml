@@ -2,7 +2,7 @@
   <artifact type="jar" build-on-make="true" name="untitled:jar2">
     <output-path>$PROJECT_DIR$/out/artifacts/untitled_jar2</output-path>
     <root id="archive" name="untitled.jar">
-      <element id="module-output" name="untitled" />
+      <element id="module-output" name="University_property_system" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/openjfx/javafx-controls/21.0.6/javafx-controls-21.0.6.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/openjfx/javafx-controls/21.0.6/javafx-controls-21.0.6-win.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/google/protobuf/protobuf-java/4.31.1/protobuf-java-4.31.1.jar" path-in-jar="/" />
