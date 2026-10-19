@@ -1,3 +1,5 @@
+DROP DATABASE IF EXISTS university_property_db;
+
 CREATE DATABASE IF NOT EXISTS university_property_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE university_property_db;
 
@@ -13,14 +15,14 @@ CREATE TABLE IF NOT EXISTS property_items (
     inventory_number VARCHAR(50) NOT NULL UNIQUE,
     name VARCHAR(150) NOT NULL,
     category VARCHAR(100) NOT NULL,
-    status_item VARCHAR(50) NOT NULL
+    status_item VARCHAR(50) NOT NULL DEFAULT 'AVAILABLE'
     ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS issue_requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     property_id INT NOT NULL,
-    request_status VARCHAR(50) NOT NULL DEFAULT 'Created',
+    request_status VARCHAR(50) NOT NULL DEFAULT 'CREATED',
     urgency_f1 INT DEFAULT 0,
     criticality_f2 INT DEFAULT 0,
     deficit_f3 INT DEFAULT 0,
@@ -43,11 +45,11 @@ INSERT INTO users (full_name, role, email) VALUES
     ('Ольга Коваленко', 'Викладач', 'o.kovalenko@uni.edu');
 
 INSERT INTO property_items (inventory_number, name, category, status_item) VALUES
-    ('INV-001', 'Проєктор Epson', 'Мультимедіа', 'Available'),
-    ('INV-002', 'Ноутбук Lenovo ThinkPad', 'Обчислювальна техніка', 'Available');
+    ('INV-001', 'Проєктор Epson', 'Мультимедіа', 'AVAILABLE'),
+    ('INV-002', 'Ноутбук Lenovo ThinkPad', 'Обчислювальна техніка', 'AVAILABLE');
 
 INSERT INTO issue_requests (user_id, property_id, request_status, urgency_f1, criticality_f2, deficit_f3, integral_index) VALUES
-    (1, 1, 'Created', 80, 70, 50, (0.40*80 + 0.35*70 + 0.25*50));
+    (1, 1, 'CREATED', 80, 70, 50, (0.40*80 + 0.35*70 + 0.25*50));
 
 INSERT INTO transfer_records (request_id, transfer_date, return_date, notes) VALUES
     (1, '2026-10-15', NULL, 'Видано для проведення лабораторної роботи');

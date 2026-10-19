@@ -1,0 +1,176 @@
+package servlet;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import model.IssueRequest;
+import status.RequestState;
+import service.IssueRequestService;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+public class IssueRequestServlet extends HttpServlet {
+    private IssueRequestService requestService;
+    private ObjectMapper mapper;
+
+    @Override
+    public void init() {
+        requestService = new IssueRequestService();
+        mapper = new ObjectMapper();
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String action = request.getParameter("action");
+        if (action == null || action.isBlank()) {
+            action = "list";
+        }
+
+        try {
+            switch (action) {
+                case "new" -> showNewForm(request, response);
+                case "edit" -> showEditForm(request, response);
+                case "delete" -> deleteRequest(request, response);
+                default -> listRequests(request, response);
+            }
+        } catch (Exception e) {
+            handleError(request, response, e);
+        }
+    }
+
+    private void showNewForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        if (wantsJson(request)) {
+            writeJsonError(response, HttpServletResponse.SC_BAD_REQUEST, "Неочікуваний формат для форми");
+        } else {
+            request.getRequestDispatcher("request-form.jsp").forward(request, response);
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        String action = request.getParameter("action");
+
+        try {
+            if ("insert".equals(action)) {
+                insertRequest(request, response);
+            } else if ("update".equals(action)) {
+                updateRequest(request, response);
+            } else {
+                if (wantsJson(request)) {
+                    writeJsonError(response, HttpServletResponse.SC_BAD_REQUEST, "Невідома операція");
+                } else {
+                    response.sendRedirect("requests");
+                }
+            }
+        } catch (Exception e) {
+            handleError(request, response, e);
+        }
+    }
+
+    private void listRequests(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        List<IssueRequest> requests = requestService.getAllRequests();
+        if (wantsJson(request)) {
+            writeJson(response, requests);
+        } else {
+            request.setAttribute("requests", requests);
+            response.sendRedirect("index.jsp?tab=requests");
+        }
+    }
+
+    private void showEditForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        IssueRequest req = requestService.getRequestById(id);
+        if (req == null) {
+            if (wantsJson(request)) {
+                writeJsonError(response, HttpServletResponse.SC_NOT_FOUND, "Заявку не знайдено");
+            } else {
+                response.sendRedirect("index.jsp?tab=requests");
+            }
+            return;
+        }
+        if (wantsJson(request)) {
+            writeJson(response, req);
+        } else {
+            request.setAttribute("issueRequest", req);
+            request.getRequestDispatcher("request-form.jsp").forward(request, response);
+        }
+    }
+
+    private void insertRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        int userId = Integer.parseInt(request.getParameter("userId"));
+        int propertyId = Integer.parseInt(request.getParameter("propertyId"));
+        RequestState status = RequestState.valueOf(request.getParameter("requestStatus"));
+        int f1 = Integer.parseInt(request.getParameter("urgencyF1"));
+        int f2 = Integer.parseInt(request.getParameter("criticalityF2"));
+        int f3 = Integer.parseInt(request.getParameter("deficitF3"));
+
+        IssueRequest issueRequest = new IssueRequest(userId, propertyId, status, f1, f2, f3);
+        requestService.addRequest(issueRequest);
+        sendAfterChange(request, response);
+    }
+
+    private void updateRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        int userId = Integer.parseInt(request.getParameter("userId"));
+        int propertyId = Integer.parseInt(request.getParameter("propertyId"));
+        RequestState status = RequestState.valueOf(request.getParameter("requestStatus"));
+        int f1 = Integer.parseInt(request.getParameter("urgencyF1"));
+        int f2 = Integer.parseInt(request.getParameter("criticalityF2"));
+        int f3 = Integer.parseInt(request.getParameter("deficitF3"));
+
+        IssueRequest issueRequest = new IssueRequest(id, userId, propertyId, status, f1, f2, f3, IssueRequest.calculateIntegralIndex(f1, f2, f3));
+        requestService.updateRequest(issueRequest);
+        sendAfterChange(request, response);
+    }
+
+    private void deleteRequest(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        requestService.deleteRequest(id);
+        sendAfterChange(request, response);
+    }
+
+    private boolean wantsJson(HttpServletRequest request) {
+        return "json".equalsIgnoreCase(request.getParameter("format"));
+    }
+
+    private void sendAfterChange(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        if (wantsJson(request)) {
+            writeJson(response, requestService.getAllRequests());
+        } else {
+            response.sendRedirect("requests");
+        }
+    }
+
+    private void writeJson(HttpServletResponse response, Object data) throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        mapper.writeValue(response.getWriter(), data);
+    }
+
+    private void writeJsonError(HttpServletResponse response, int status, String message) throws IOException {
+        response.setStatus(status);
+        writeJson(response, Map.of("error", message));
+    }
+
+    private void handleError(HttpServletRequest request, HttpServletResponse response, Exception e)
+            throws ServletException, IOException {
+        if (wantsJson(request)) {
+            writeJsonError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Помилка сервера: " + e.getMessage());
+        } else {
+            throw new ServletException(e);
+        }
+    }
+}
