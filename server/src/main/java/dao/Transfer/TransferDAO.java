@@ -1,12 +1,12 @@
 package dao.Transfer;
 
-import model.TransferRecord;
+import model.Transfer;
 import java.util.List;
 
 public interface TransferDAO {
-    List<TransferRecord> getAllTransfers();
-    TransferRecord getTransferById(int id);
-    void addTransfer(TransferRecord transfer);
-    void updateTransfer(TransferRecord transfer);
+    List<Transfer> getAllTransfers();
+    Transfer getTransferById(int id);
+    void addTransfer(Transfer transfer);
+    void updateTransfer(Transfer transfer);
     void deleteTransfer(int id);
 }

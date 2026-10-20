@@ -1,6 +1,6 @@
 package dao.Transfer;
 
-import model.TransferRecord;
+import model.Transfer;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,15 +8,15 @@ import dao.DBUtil;
 public class TransferDAOImpl implements TransferDAO {
 
     @Override
-    public List<TransferRecord> getAllTransfers() {
-        List<TransferRecord> list = new ArrayList<>();
+    public List<Transfer> getAllTransfers() {
+        List<Transfer> list = new ArrayList<>();
         String sql = "SELECT id, request_id, transfer_date, return_date, notes FROM transfer_records ORDER BY id";
         try (Connection conn = DBUtil.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 Date retDate = rs.getDate("return_date");
-                list.add(new TransferRecord(
+                list.add(new Transfer(
                         rs.getInt("id"),
                         rs.getInt("request_id"),
                         rs.getDate("transfer_date").toLocalDate(),
@@ -31,7 +31,7 @@ public class TransferDAOImpl implements TransferDAO {
     }
 
     @Override
-    public TransferRecord getTransferById(int id) {
+    public Transfer getTransferById(int id) {
         String sql = "SELECT id, request_id, transfer_date, return_date, notes FROM transfer_records WHERE id = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -39,7 +39,7 @@ public class TransferDAOImpl implements TransferDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     Date retDate = rs.getDate("return_date");
-                    return new TransferRecord(
+                    return new Transfer(
                             rs.getInt("id"),
                             rs.getInt("request_id"),
                             rs.getDate("transfer_date").toLocalDate(),
@@ -55,7 +55,7 @@ public class TransferDAOImpl implements TransferDAO {
     }
 
     @Override
-    public void addTransfer(TransferRecord transfer) {
+    public void addTransfer(Transfer transfer) {
         String sql = "INSERT INTO transfer_records (request_id, transfer_date, return_date, notes) VALUES (?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -70,7 +70,7 @@ public class TransferDAOImpl implements TransferDAO {
     }
 
     @Override
-    public void updateTransfer(TransferRecord transfer) {
+    public void updateTransfer(Transfer transfer) {
         String sql = "UPDATE transfer_records SET request_id = ?, transfer_date = ?, return_date = ?, notes = ? WHERE id = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

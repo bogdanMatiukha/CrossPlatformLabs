@@ -2,7 +2,7 @@ package servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import model.TransferRecord;
+import model.Transfer;
 import service.TransferService;
 
 import javax.servlet.ServletException;
@@ -58,7 +58,7 @@ public class TransferServlet extends HttpServlet {
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         int id = Integer.parseInt(request.getParameter("id"));
-        TransferRecord record = transferService.getTransferById(id);
+        Transfer record = transferService.getTransferById(id);
 
         if (record == null) {
             if (wantsJson(request)) {
@@ -104,7 +104,7 @@ public class TransferServlet extends HttpServlet {
 
     private void listTransfers(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        List<TransferRecord> transfers = transferService.getAllTransfers();
+        List<Transfer> transfers = transferService.getAllTransfers();
 
         if (wantsJson(request)) {
             writeJson(response, transfers);
@@ -124,7 +124,7 @@ public class TransferServlet extends HttpServlet {
 
         String notes = request.getParameter("notes");
 
-        TransferRecord record = new TransferRecord(
+        Transfer record = new Transfer(
                 0, requestId, transferDate, returnDate, notes
         );
 
@@ -144,7 +144,7 @@ public class TransferServlet extends HttpServlet {
 
         String notes = request.getParameter("notes");
 
-        TransferRecord record = new TransferRecord(
+        Transfer record = new Transfer(
                 id, requestId, transferDate, returnDate, notes
         );
 

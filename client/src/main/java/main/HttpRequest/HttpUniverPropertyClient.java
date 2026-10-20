@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import main.model.IssueRequest;
 import main.model.PropertyItem;
-import main.model.TransferRecord;
+import main.model.Transfer;
 import main.model.User;
 
 import java.net.URI;
@@ -151,19 +151,19 @@ public class HttpUniverPropertyClient {
     // =========================================================================
     // 4. Transfers
 
-    public List<TransferRecord> getAllTransfers() {
+    public List<Transfer> getAllTransfers() {
         String url = BASE_URL + "/transfers?format=json";
         HttpResponse<String> response = send(getRequest(url));
         checkStatus(response);
         try {
-            TransferRecord[] transfers = mapper.readValue(response.body(), TransferRecord[].class);
+            Transfer[] transfers = mapper.readValue(response.body(), Transfer[].class);
             return Arrays.asList(transfers);
         } catch (Exception e) {
             throw new RuntimeException("Некоректна JSON-відповідь сервера (Transfers)", e);
         }
     }
 
-    public void addTransfer(TransferRecord transfer) {
+    public void addTransfer(Transfer transfer) {
         String form = "action=insert"
                 + "&format=json"
                 + "&requestId=" + transfer.getRequestId()
@@ -173,7 +173,7 @@ public class HttpUniverPropertyClient {
         checkStatus(send(postRequest(BASE_URL + "/transfers", form)));
     }
 
-    public void updateTransfer(TransferRecord transfer) {
+    public void updateTransfer(Transfer transfer) {
         String form = "action=update"
                 + "&format=json"
                 + "&id=" + transfer.getId()

@@ -1,17 +1,17 @@
-package main.model;
+package model;
 
 import java.time.LocalDate;
 
-public class TransferRecord {
+public class Transfer {
     private int id;
     private int requestId;
     private LocalDate transferDate;
     private LocalDate returnDate;
     private String notes;
 
-    public TransferRecord() {}
+    public Transfer() {}
 
-    public TransferRecord(int id, int requestId, LocalDate transferDate, LocalDate returnDate, String notes) {
+    public Transfer(int id, int requestId, LocalDate transferDate, LocalDate returnDate, String notes) {
         this.id = id;
         this.requestId = requestId;
         this.transferDate = transferDate;
@@ -19,7 +19,7 @@ public class TransferRecord {
         this.notes = notes;
     }
 
-    public TransferRecord(int id, int requestId, String transferDateStr, String returnDateStr, String notes) {
+    public Transfer(int id, int requestId, String transferDateStr, String returnDateStr, String notes) {
         this.id = id;
         this.requestId = requestId;
         this.transferDate = transferDateStr != null ? LocalDate.parse(transferDateStr) : null;
