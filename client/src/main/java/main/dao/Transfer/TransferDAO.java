@@ -1,6 +1,6 @@
 package main.dao.Transfer;
 
-import model.TransferRecord;
+import main.model.TransferRecord;
 import java.util.List;
 
 public interface TransferDAO {

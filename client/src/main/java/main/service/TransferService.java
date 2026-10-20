@@ -1,8 +1,8 @@
 package main.service;
 
-import dao.Transfer.TransferDAO;
-import dao.Transfer.TransferDAOImpl;
-import model.TransferRecord;
+import main.dao.Transfer.TransferDAO;
+import main.dao.Transfer.TransferDAOImpl;
+import main.model.TransferRecord;
 import java.util.List;
 
 public class TransferService {

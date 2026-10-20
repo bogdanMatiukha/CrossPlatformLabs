@@ -1,8 +1,8 @@
 package main.service;
 
-import dao.User.UserDAO;
-import dao.User.UserDAOImpl;
-import model.User;
+import main.dao.User.UserDAO;
+import main.dao.User.UserDAOImpl;
+import main.model.User;
 import java.util.List;
 
 public class UserService {

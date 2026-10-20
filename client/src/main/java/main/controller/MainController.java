@@ -1,6 +1,6 @@
 package main.controller;
 
-import main.client.HttpProjectClient;
+import main.HttpRequest.HttpUniverPropertyClient;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -30,7 +30,7 @@ public class MainController {
     @FXML private TextField filterField;
     @FXML private Label statusLabel;
 
-    private final HttpProjectClient client = new HttpProjectClient();
+    private final HttpUniverPropertyClient client = new HttpUniverPropertyClient();
 
     private final Map<String, String> fieldMap = Map.of(
             "ID", "id",

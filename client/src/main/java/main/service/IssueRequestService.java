@@ -1,8 +1,8 @@
 package main.service;
 
-import dao.IssueRequest.IssueRequestDAO;
-import dao.IssueRequest.IssueRequestDAOImpl;
-import model.IssueRequest;
+import main.dao.IssueRequest.IssueRequestDAO;
+import main.dao.IssueRequest.IssueRequestDAOImpl;
+import main.model.IssueRequest;
 import java.util.List;
 
 public class IssueRequestService {

@@ -1,5 +1,5 @@
 package main.model;
-import status.ItemState;
+import main.status.ItemState;
 
 public class PropertyItem {
     private int id;

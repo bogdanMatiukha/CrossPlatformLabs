@@ -1,6 +1,6 @@
 package main.dao.User;
 
-import model.User;
+import main.model.User;
 import java.util.List;
 
 public interface UserDAO {

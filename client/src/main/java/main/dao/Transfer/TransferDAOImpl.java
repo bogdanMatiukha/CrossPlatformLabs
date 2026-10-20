@@ -1,8 +1,8 @@
 package main.dao.Transfer;
 
-import dao.DBUtil;
-import dao.Transfer.TransferDAO;
-import model.TransferRecord;
+import main.dao.DBUtil;
+import main.dao.Transfer.TransferDAO;
+import main.model.TransferRecord;
 
 import java.sql.*;
 import java.util.ArrayList;

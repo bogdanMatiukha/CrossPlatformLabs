@@ -1,6 +1,6 @@
 package main.model;
 
-import status.RequestState;
+import main.status.RequestState;
 
 public class IssueRequest {
     private int id;

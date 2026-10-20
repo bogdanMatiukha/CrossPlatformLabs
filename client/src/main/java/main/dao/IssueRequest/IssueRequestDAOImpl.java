@@ -1,8 +1,8 @@
 package main.dao.IssueRequest;
 
-import dao.DBUtil;
-import model.IssueRequest;
-import status.RequestState;
+import main.dao.DBUtil;
+import main.model.IssueRequest;
+import main.status.RequestState;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

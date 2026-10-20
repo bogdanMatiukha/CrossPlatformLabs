@@ -1,8 +1,8 @@
 package main.service;
 
-import dao.Property.PropertyDAO;
-import dao.Property.PropertyDAOImpl;
-import model.PropertyItem;
+import main.dao.Property.PropertyDAO;
+import main.dao.Property.PropertyDAOImpl;
+import main.model.PropertyItem;
 import java.util.List;
 
 public class PropertyService {

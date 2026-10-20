@@ -1,8 +1,8 @@
 package main.dao.User;
 
-import dao.DBUtil;
-import dao.User.UserDAO;
-import model.User;
+import main.dao.DBUtil;
+import main.dao.User.UserDAO;
+import main.model.User;
 
 import java.sql.*;
 import java.util.ArrayList;

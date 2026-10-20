@@ -1,6 +1,6 @@
 package main.dao.IssueRequest;
 
-import model.IssueRequest;
+import main.model.IssueRequest;
 import java.util.List;
 
 public interface IssueRequestDAO {

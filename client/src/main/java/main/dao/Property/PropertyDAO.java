@@ -1,6 +1,6 @@
 package main.dao.Property;
 
-import model.PropertyItem;
+import main.model.PropertyItem;
 import java.util.List;
 
 public interface PropertyDAO {

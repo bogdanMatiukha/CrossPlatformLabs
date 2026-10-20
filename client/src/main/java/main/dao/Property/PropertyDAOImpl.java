@@ -1,8 +1,8 @@
 package main.dao.Property;
 
-import dao.DBUtil;
-import model.PropertyItem;
-import status.ItemState;
+import main.dao.DBUtil;
+import main.model.PropertyItem;
+import main.status.ItemState;
 
 import java.sql.*;
 import java.util.ArrayList;
