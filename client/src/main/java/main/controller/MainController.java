@@ -18,6 +18,11 @@ import main.status.RequestState;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.logging.Logger;
+import javafx.stage.FileChooser;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.ArrayList;
 
 public class MainController {
     private static final Logger logger = Logger.getLogger(MainController.class.getName());
@@ -71,6 +76,8 @@ public class MainController {
     @FXML private DatePicker transDatePicker, transReturnDatePicker;
 
     @FXML private Label statusLabel;
+    @FXML private ProgressBar requestProgressBar;
+    @FXML private Button importCsvButton;
 
     private final HttpUniverPropertyClient client = new HttpUniverPropertyClient();
 
@@ -129,6 +136,8 @@ public class MainController {
         updateButton.managedProperty().unbind();
         deleteButton.visibleProperty().unbind();
         deleteButton.managedProperty().unbind();
+        importCsvButton.visibleProperty().unbind();
+        importCsvButton.managedProperty().unbind();
 
         if (activeTab == userTab) {
             bindButtonVisibility(userTable);
@@ -139,6 +148,9 @@ public class MainController {
         } else if (activeTab == transferTab) {
             bindButtonVisibility(transferTable);
         }
+
+        importCsvButton.setVisible(activeTab == propertyTab);
+        importCsvButton.setManaged(activeTab == propertyTab);
     }
 
     private <T> void bindButtonVisibility(TableView<T> table) {
@@ -331,13 +343,216 @@ public class MainController {
         transferTable.getSelectionModel().clearSelection();
     }
 
+    private List<String> parseCsvLine(String line, char delimiter) {
+        List<String> fields = new ArrayList<>();
+        StringBuilder field = new StringBuilder();
+        boolean quoted = false;
+
+        for (int i = 0; i < line.length(); i++) {
+            char ch = line.charAt(i);
+
+            if (ch == '"') {
+                if (quoted && i + 1 < line.length()
+                        && line.charAt(i + 1) == '"') {
+                    field.append('"');
+                    i++;
+                } else {
+                    quoted = !quoted;
+                }
+            } else if (ch == delimiter && !quoted) {
+                fields.add(field.toString());
+                field.setLength(0);
+            } else {
+                field.append(ch);
+            }
+        }
+
+        if (quoted) {
+            throw new IllegalArgumentException(
+                    "Незакриті лапки у CSV-рядку");
+        }
+
+        fields.add(field.toString());
+        return fields;
+    }
+
+    @FXML
+    private void handleImportCsv() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Імпорт майна з CSV");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("CSV файли", "*.csv")
+        );
+
+        File file = fileChooser.showOpenDialog(
+                propertyTable.getScene().getWindow()
+        );
+
+        if (file == null) {
+            return;
+        }
+
+        Task<Integer> task = new Task<>() {
+            @Override
+            protected Integer call() throws Exception {
+                List<String> lines = Files.readAllLines(
+                        file.toPath(), StandardCharsets.UTF_8);
+
+                if (!lines.isEmpty()) {
+                    lines.set(0, lines.get(0).replace("\uFEFF", ""));
+                }
+
+                List<String> dataLines = new ArrayList<>();
+                for (String line : lines) {
+                    if (!line.trim().isEmpty()) {
+                        dataLines.add(line);
+                    }
+                }
+
+                if (dataLines.isEmpty()) {
+                    throw new IllegalArgumentException("CSV-файл порожній");
+                }
+
+                char delimiter = dataLines.get(0).contains(";") ? ';' : ',';
+
+                String firstColumn = parseCsvLine(
+                        dataLines.get(0), delimiter).get(0).trim();
+
+                int startIndex = firstColumn.equalsIgnoreCase("inventoryNumber")
+                        || firstColumn.equalsIgnoreCase("inventory_number")
+                        || firstColumn.equalsIgnoreCase("інвентарний номер")
+                        ? 1 : 0;
+
+                int total = dataLines.size() - startIndex;
+
+                if (total <= 0) {
+                    throw new IllegalArgumentException(
+                            "CSV-файл не містить записів майна");
+                }
+
+                int imported = 0;
+
+                for (int i = startIndex; i < dataLines.size(); i++) {
+                    if (isCancelled()) {
+                        break;
+                    }
+
+                    int rowNumber = i + 1;
+                    List<String> fields = parseCsvLine(
+                            dataLines.get(i), delimiter);
+
+                    if (fields.size() != 4) {
+                        throw new IllegalArgumentException(
+                                "Рядок " + rowNumber
+                                        + ": очікується 4 поля");
+                    }
+
+                    String inventoryNumber = fields.get(0).trim();
+                    String name = fields.get(1).trim();
+                    String category = fields.get(2).trim();
+                    String statusText = fields.get(3).trim();
+
+                    if (inventoryNumber.isEmpty()
+                            || name.isEmpty()
+                            || category.isEmpty()
+                            || statusText.isEmpty()) {
+                        throw new IllegalArgumentException(
+                                "Рядок " + rowNumber
+                                        + ": заповніть усі поля");
+                    }
+
+                    ItemState state;
+
+                    try {
+                        state = ItemState.valueOf(
+                                statusText.toUpperCase(java.util.Locale.ROOT));
+                    } catch (IllegalArgumentException ex) {
+                        throw new IllegalArgumentException(
+                                "Рядок " + rowNumber
+                                        + ": невідомий статус " + statusText);
+                    }
+
+                    PropertyItem item = new PropertyItem(
+                            0,
+                            inventoryNumber,
+                            name,
+                            category,
+                            state
+                    );
+
+                    updateMessage("Імпорт майна: "
+                            + (imported + 1) + " із " + total);
+
+                    client.addProperty(item);
+
+                    imported++;
+                    updateProgress(imported, total);
+                }
+
+                return imported;
+            }
+        };
+
+        requestProgressBar.progressProperty().unbind();
+        statusLabel.textProperty().unbind();
+
+        showProgress();
+
+        requestProgressBar.setProgress(0);
+        requestProgressBar.progressProperty().bind(task.progressProperty());
+        statusLabel.textProperty().bind(task.messageProperty());
+
+        statusLabel.getStyleClass().removeAll("status-error");
+        statusLabel.getStyleClass().removeAll("status-loading");
+        statusLabel.getStyleClass().add("status-loading");
+
+        task.setOnSucceeded(e -> {
+            requestProgressBar.progressProperty().unbind();
+            requestProgressBar.setProgress(1);
+
+            statusLabel.textProperty().unbind();
+            statusLabel.setText(
+                    "Імпорт завершено. Додано записів: " + task.getValue());
+            setStatusStyle(false);
+
+            loadAllData();
+        });
+
+        task.setOnFailed(e -> {
+            requestProgressBar.progressProperty().unbind();
+            requestProgressBar.setProgress(0);
+
+            statusLabel.textProperty().unbind();
+            statusLabel.setText("Помилка імпорту: "
+                    + task.getException().getMessage());
+            setStatusStyle(true);
+
+            loadAllData();
+        });
+
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+    }
+
     private void loadAllData() {
         Task<Void> task = new Task<>() {
             @Override
             protected Void call() {
+                updateProgress(0, 4);
+                updateMessage("Завантаження користувачів...");
                 List<User> users = client.getAllUsers();
+
+                updateProgress(1, 4);
+                updateMessage("Завантаження майна...");
                 List<PropertyItem> props = client.getAllProperties();
+
+                updateProgress(2, 4);
+                updateMessage("Завантаження заявок...");
                 List<IssueRequest> reqs = client.getAllRequests();
+
+                updateProgress(3, 4);
+                updateMessage("Завантаження передач...");
                 List<Transfer> trans = client.getAllTransfers();
 
                 javafx.application.Platform.runLater(() -> {
@@ -346,14 +561,68 @@ public class MainController {
                     requestTable.setItems(FXCollections.observableArrayList(reqs));
                     transferTable.setItems(FXCollections.observableArrayList(trans));
                 });
+
+                updateProgress(4, 4);
                 return null;
             }
         };
-        task.setOnSucceeded(e -> statusLabel.setText("Дані успішно оновлено"));
-        task.setOnFailed(e -> statusLabel.setText("Помилка завантаження даних"));
+
+        requestProgressBar.progressProperty().unbind();
+        statusLabel.textProperty().unbind();
+
+        showProgress();
+
+        requestProgressBar.progressProperty().bind(task.progressProperty());
+        statusLabel.textProperty().bind(task.messageProperty());
+
+        statusLabel.getStyleClass().removeAll("status-error", "status-loading");
+        statusLabel.getStyleClass().add("status-loading");
+
+        task.setOnSucceeded(e -> {
+            requestProgressBar.progressProperty().unbind();
+            statusLabel.textProperty().unbind();
+
+            hideProgress();
+
+            statusLabel.setText("Дані успішно оновлено");
+            setStatusStyle(false);
+        });
+
+        task.setOnFailed(e -> {
+            requestProgressBar.progressProperty().unbind();
+            statusLabel.textProperty().unbind();
+
+            hideProgress();
+
+            statusLabel.setText("Помилка завантаження: "
+                    + task.getException().getMessage());
+            setStatusStyle(true);
+        });
+
         Thread th = new Thread(task);
         th.setDaemon(true);
         th.start();
+    }
+
+    private void showProgress() {
+        requestProgressBar.setVisible(true);
+        requestProgressBar.setManaged(true);
+    }
+
+    private void hideProgress() {
+        requestProgressBar.progressProperty().unbind();
+        requestProgressBar.setProgress(0);
+        requestProgressBar.setVisible(false);
+        requestProgressBar.setManaged(false);
+    }
+
+    private void setStatusStyle(boolean error) {
+        statusLabel.getStyleClass().removeAll(
+                "status-error", "status-loading");
+
+        if (error) {
+            statusLabel.getStyleClass().add("status-error");
+        }
     }
 
     private void runAction(Runnable action, String startMsg, String successMsg) {
@@ -361,21 +630,50 @@ public class MainController {
             @Override
             protected Void call() {
                 updateMessage(startMsg);
+                updateProgress(-1, 1);
+
                 action.run();
+
+                updateProgress(1, 1);
                 return null;
             }
         };
+
+        requestProgressBar.progressProperty().unbind();
+        statusLabel.textProperty().unbind();
+
+        showProgress();
+
+        requestProgressBar.progressProperty().bind(task.progressProperty());
         statusLabel.textProperty().bind(task.messageProperty());
+
+        statusLabel.getStyleClass().removeAll("status-error", "status-loading");
+        statusLabel.getStyleClass().add("status-loading");
+
         task.setOnSucceeded(e -> {
+            requestProgressBar.progressProperty().unbind();
             statusLabel.textProperty().unbind();
+
+            hideProgress();
+
             statusLabel.setText(successMsg);
+            setStatusStyle(false);
+
             clearForm();
             loadAllData();
         });
+
         task.setOnFailed(e -> {
+            requestProgressBar.progressProperty().unbind();
             statusLabel.textProperty().unbind();
-            statusLabel.setText("Помилка: " + task.getException().getMessage());
+
+            hideProgress();
+
+            statusLabel.setText("Помилка запиту: "
+                    + task.getException().getMessage());
+            setStatusStyle(true);
         });
+
         Thread th = new Thread(task);
         th.setDaemon(true);
         th.start();

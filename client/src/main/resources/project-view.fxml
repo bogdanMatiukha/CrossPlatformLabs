@@ -12,6 +12,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.ProgressBar?>
 
 <VBox spacing="14"
       xmlns="http://javafx.com/javafx/21"
@@ -111,11 +112,7 @@
             <TextField fx:id="propInvField" promptText="Інвентарний номер" HBox.hgrow="ALWAYS"/>
             <TextField fx:id="propNameField" promptText="Назва майна" HBox.hgrow="ALWAYS"/>
             <TextField fx:id="propCatField" promptText="Категорія" HBox.hgrow="ALWAYS"/>
-            <ComboBox fx:id="propStatusCombo"
-                      promptText="Виберіть статус майна"
-                      prefWidth="180"
-                      minWidth="150"
-                      maxWidth="180"/>
+            <ComboBox fx:id="propStatusCombo" promptText="Виберіть статус майна" prefWidth="180" minWidth="150" maxWidth="180"/>
         </HBox>
 
         <!-- Форма для Заявок -->
@@ -123,11 +120,7 @@
             <HBox spacing="8">
                 <TextField fx:id="reqUserIdField" promptText="ID Користувача" HBox.hgrow="ALWAYS"/>
                 <TextField fx:id="reqPropIdField" promptText="ID Майна" HBox.hgrow="ALWAYS"/>
-                <ComboBox fx:id="reqStatusCombo"
-                          promptText="Статус заявки"
-                          prefWidth="180"
-                          minWidth="150"
-                          maxWidth="180"/>
+                <ComboBox fx:id="reqStatusCombo" promptText="Статус заявки" prefWidth="180" minWidth="150" maxWidth="180"/>
             </HBox>
             <HBox spacing="8">
                 <TextField fx:id="reqF1Field" promptText="F1 (Терміновість)" HBox.hgrow="ALWAYS"/>
@@ -150,10 +143,24 @@
         <Button text="Додати" onAction="#handleAdd" styleClass="primary-button"/>
         <Button fx:id="updateButton" text="Редагувати" onAction="#handleUpdate" styleClass="warning-button"/>
         <Button fx:id="deleteButton" text="Видалити" onAction="#handleDelete" styleClass="danger-button"/>
+        <Button fx:id="importCsvButton" text="Імпорт CSV" onAction="#handleImportCsv" styleClass="primary-button"/>
         <Button text="Очистити форму" onAction="#clearForm" styleClass="secondary-button"/>
         <Button text="Оновити список" onAction="#handleRefresh" styleClass="primary-button"/>
     </HBox>
 
-    <Label fx:id="statusLabel" text="Готово" maxWidth="Infinity" styleClass="status-label"/>
+    <VBox spacing="5">
+        <ProgressBar
+                fx:id="requestProgressBar"
+                progress="0"
+                maxWidth="Infinity"
+                prefWidth="1000"
+                prefHeight="18"
+                minHeight="18"
+                visible="false"
+                managed="false"
+                styleClass="request-progress"/>
+
+        <Label fx:id="statusLabel" text="Готово" maxWidth="Infinity" styleClass="status-label"/>
+    </VBox>
 
 </VBox>

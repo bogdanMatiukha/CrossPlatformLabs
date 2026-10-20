@@ -91,6 +91,42 @@
     -fx-faint-focus-color: transparent;
 }
 
+/* Progress bar */
+
+.request-progress {
+    -fx-pref-height: 18px;
+    -fx-min-height: 18px;
+    -fx-max-height: 18px;
+    -fx-accent: #22c55e;
+}
+
+.request-progress > .track {
+    -fx-background-color: #e5e7eb;
+    -fx-background-radius: 5px;
+    -fx-background-insets: 0;
+}
+
+.request-progress > .bar {
+    -fx-background-color: #22c55e;
+    -fx-background-radius: 5px;
+    -fx-background-insets: 0;
+    -fx-background-insets: 0;
+}
+
+/* Request status */
+
+.status-loading {
+    -fx-background-color: #effbf3;
+    -fx-border-color: #bbf7d0;
+    -fx-text-fill: #15803d;
+}
+
+.status-error {
+    -fx-background-color: #fff0f0;
+    -fx-border-color: #fecaca;
+    -fx-text-fill: #c03939;
+}
+
 /* Tables */
 
 .table-view {
