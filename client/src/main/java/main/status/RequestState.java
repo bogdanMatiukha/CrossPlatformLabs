@@ -1,5 +1,5 @@
 package main.status;
 
-public enum PropertyState {
+public enum RequestState {
     CREATED, APPROVED, PUBLISHED, RETURNED
 }
