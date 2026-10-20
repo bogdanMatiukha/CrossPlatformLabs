@@ -1,72 +1,265 @@
-.root {
-    -fx-font-family: "Arial";
-    -fx-font-size: 13px;
-    -fx-background-color: #f3f6fb;
+/* Main window */
+
+.root-container {
+    -fx-font-family: "Segoe UI", "Arial";
+    -fx-font-size: 12px;
+    -fx-background-color: #f7f9fc;
 }
 
+/* Headings */
+
 .title-label {
-    -fx-font-size: 22px;
+    -fx-font-size: 20px;
     -fx-font-weight: bold;
-    -fx-text-fill: #1e3a5f;
+    -fx-text-fill: #17243a;
+    -fx-padding: 0 0 2px 0;
 }
 
 .section-label {
-    -fx-font-size: 15px;
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
-    -fx-text-fill: #315780;
+    -fx-text-fill: #17243a;
+    -fx-padding: 0;
 }
 
+/* Tabs */
+
+.tab-pane {
+    -fx-background-color: transparent;
+    -fx-tab-min-height: 32px;
+    -fx-tab-max-height: 32px;
+}
+
+.tab-pane > .tab-header-area {
+    -fx-padding: 0 0 6px 0;
+}
+
+.tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: transparent;
+}
+
+.tab-pane .headers-region {
+    -fx-background-color: transparent;
+}
+
+.tab-pane .tab {
+    -fx-background-color: transparent;
+    -fx-background-radius: 5px;
+    -fx-padding: 6px 10px;
+    -fx-cursor: hand;
+}
+
+.tab-pane .tab .tab-label {
+    -fx-font-size: 11px;
+    -fx-text-fill: #64748b;
+}
+
+.tab-pane .tab:hover {
+    -fx-background-color: #edf2f8;
+}
+
+.tab-pane > .tab-content-area {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8px;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 8px;
+    -fx-border-width: 1px;
+    -fx-padding: 5px;
+}
+
+/* Tables */
+
 .table-view {
-    -fx-background-color: white;
-    -fx-border-color: #cbd5e1;
-    -fx-border-radius: 6px;
-    -fx-background-radius: 6px;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 5px;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+    -fx-table-cell-border-color: #edf1f6;
+    -fx-fixed-cell-size: 33px;
 }
 
 .table-view .column-header-background {
-    -fx-background-color: #dce8f5;
+    -fx-background-color: #f5f7fb;
+    -fx-background-radius: 5px 5px 0 0;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-size: 34px;
+    -fx-border-color: transparent transparent #e5eaf1 transparent;
 }
 
 .table-view .column-header .label {
-    -fx-text-fill: #1e3a5f;
+    -fx-text-fill: #52627a;
+    -fx-font-size: 11px;
     -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 7px;
 }
+
+.table-view .table-cell {
+    -fx-text-fill: #334155;
+    -fx-font-size: 11px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 7px;
+    -fx-border-color: transparent;
+}
+
+.table-row-cell {
+    -fx-background-color: #ffffff;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: #f1f5fc;
+}
+
+.table-view .placeholder .label {
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 12px;
+}
+
+/* Input fields */
 
 .text-field,
-.combo-box {
-    -fx-background-radius: 5px;
-    -fx-border-radius: 5px;
-    -fx-border-color: #cbd5e1;
-    -fx-padding: 7px;
+.combo-box,
+.date-picker {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 6px;
+    -fx-border-color: #dfe5ee;
+    -fx-border-radius: 6px;
+    -fx-border-width: 1px;
+    -fx-padding: 6px 8px;
+    -fx-font-size: 11px;
+    -fx-text-fill: #243449;
+    -fx-prompt-text-fill: #94a3b8;
+    -fx-min-height: 34px;
 }
 
-.button {
-    -fx-background-color: #e1e9f2;
-    -fx-text-fill: #20364d;
-    -fx-font-weight: bold;
+.text-field:hover,
+.combo-box:hover,
+.date-picker:hover {
+    -fx-border-color: #bdcbe0;
+}
+
+/* Internal date field */
+
+.date-picker > .text-field {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0 3px;
+    -fx-min-height: 25px;
+    -fx-font-size: 11px;
+}
+
+.date-picker > .arrow-button {
+    -fx-background-color: #f5f7fb;
+    -fx-background-radius: 0 5px 5px 0;
+    -fx-padding: 0 7px;
+}
+
+.date-picker > .arrow-button:hover {
+    -fx-background-color: #e8efff;
+}
+
+.combo-box .list-cell {
+    -fx-text-fill: #334155;
+    -fx-font-size: 11px;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e2e8f0;
     -fx-background-radius: 5px;
-    -fx-padding: 8px 14px;
+    -fx-border-radius: 5px;
+}
+
+.combo-box-popup .list-cell {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #334155;
+    -fx-padding: 7px 9px;
+}
+
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #edf3ff;
+}
+
+/* Form */
+
+.form-box {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8px;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 8px;
+    -fx-border-width: 1px;
+    -fx-padding: 10px;
+}
+
+/* Buttons */
+
+.button {
+    -fx-background-color: #edf1f7;
+    -fx-text-fill: #394960;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 8px 12px;
+    -fx-min-height: 34px;
     -fx-cursor: hand;
 }
 
 .button:hover {
-    -fx-background-color: #c9d9eb;
+    -fx-background-color: #e0e7f1;
 }
 
 .primary-button {
-    -fx-background-color: #2864a5;
-    -fx-text-fill: white;
+    -fx-background-color: #2864eb;
+    -fx-text-fill: #ffffff;
 }
 
 .primary-button:hover {
-    -fx-background-color: #1e4f86;
+    -fx-background-color: #1d4ed8;
+}
+
+.warning-button {
+    -fx-background-color: #fff5df;
+    -fx-text-fill: #956000;
+}
+
+.warning-button:hover {
+    -fx-background-color: #ffebbd;
 }
 
 .danger-button {
-    -fx-background-color: #b93838;
-    -fx-text-fill: white;
+    -fx-background-color: #fff0f0;
+    -fx-text-fill: #c03939;
 }
 
 .danger-button:hover {
-    -fx-background-color: #922d2d;
+    -fx-background-color: #ffe0e0;
+}
+
+.secondary-button {
+    -fx-background-color: #edf1f7;
+    -fx-text-fill: #394960;
+}
+
+.secondary-button:hover {
+    -fx-background-color: #e0e7f1;
+}
+
+/* Status */
+
+.status-label {
+    -fx-background-color: #effbf3;
+    -fx-background-radius: 6px;
+    -fx-border-color: #d9f3e1;
+    -fx-border-radius: 6px;
+    -fx-border-width: 1px;
+    -fx-text-fill: #198047;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 10px;
 }

@@ -212,6 +212,7 @@ public class MainController {
     @FXML
     private void handleRefresh() {
         loadAllData();
+        clearForm();
     }
 
     @FXML

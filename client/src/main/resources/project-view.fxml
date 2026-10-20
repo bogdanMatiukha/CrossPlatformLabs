@@ -21,7 +21,7 @@
       styleClass="root-container">
 
     <padding>
-        <Insets top="18" right="18" bottom="18" left="18"/>
+        <Insets top="14" right="16" bottom="12" left="16"/>
     </padding>
 
     <Label text="Система видачі та повернення университетського майна"
@@ -111,7 +111,11 @@
             <TextField fx:id="propInvField" promptText="Інвентарний номер" HBox.hgrow="ALWAYS"/>
             <TextField fx:id="propNameField" promptText="Назва майна" HBox.hgrow="ALWAYS"/>
             <TextField fx:id="propCatField" promptText="Категорія" HBox.hgrow="ALWAYS"/>
-            <ComboBox fx:id="propStatusCombo" promptText="Виберіть статус майна" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            <ComboBox fx:id="propStatusCombo"
+                      promptText="Виберіть статус майна"
+                      prefWidth="180"
+                      minWidth="150"
+                      maxWidth="180"/>
         </HBox>
 
         <!-- Форма для Заявок -->
@@ -119,7 +123,11 @@
             <HBox spacing="8">
                 <TextField fx:id="reqUserIdField" promptText="ID Користувача" HBox.hgrow="ALWAYS"/>
                 <TextField fx:id="reqPropIdField" promptText="ID Майна" HBox.hgrow="ALWAYS"/>
-                <ComboBox fx:id="reqStatusCombo" promptText="Статус заявки" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                <ComboBox fx:id="reqStatusCombo"
+                          promptText="Статус заявки"
+                          prefWidth="180"
+                          minWidth="150"
+                          maxWidth="180"/>
             </HBox>
             <HBox spacing="8">
                 <TextField fx:id="reqF1Field" promptText="F1 (Терміновість)" HBox.hgrow="ALWAYS"/>
