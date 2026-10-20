@@ -1,10 +1,10 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ page import="model.TransferRecord" %>
+<%@ page import="model.Transfer" %>
 <%@ page import="model.IssueRequest" %>
 <%@ page import="service.IssueRequestService" %>
 <%@ page import="java.util.List" %>
 <%
-    TransferRecord record = (TransferRecord) request.getAttribute("record");
+    Transfer record = (Transfer) request.getAttribute("record");
     boolean edit = record != null && record.getId() > 0;
 
     IssueRequestService reqService = new IssueRequestService();

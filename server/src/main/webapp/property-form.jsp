@@ -49,13 +49,25 @@
                         ? property.getStatusItem() == status
                         : status == ItemState.AVAILABLE;
 
-                String statusLabel = switch (status.name()) {
-                    case "AVAILABLE" -> "В наявності";
-                    case "ISSUED" -> "Видано";
-                    case "REPAIR" -> "На ремонті";
-                    case "UNAVAILABLE" -> "Недоступне";
-                    default -> status.name();
-                };
+                String statusLabel;
+
+                switch (status.name()) {
+                    case "AVAILABLE":
+                        statusLabel = "В наявності";
+                        break;
+                    case "ISSUED":
+                        statusLabel = "Видано";
+                        break;
+                    case "REPAIR":
+                        statusLabel = "На ремонті";
+                        break;
+                    case "UNAVAILABLE":
+                        statusLabel = "Недоступне";
+                        break;
+                    default:
+                        statusLabel = status.name();
+                        break;
+                }
             %>
                 <option value="<%= status.name() %>" <%= selected ? "selected" : "" %>>
                     <%= status.name() %> (<%= statusLabel %>)

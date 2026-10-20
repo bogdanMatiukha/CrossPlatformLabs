@@ -45,7 +45,7 @@ public class UserServlet extends HttpServlet {
 
     private void showNewForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.getRequestDispatcher("/User/user-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/user-form.jsp").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
@@ -59,7 +59,7 @@ public class UserServlet extends HttpServlet {
         }
 
         request.setAttribute("user", user);
-        request.getRequestDispatcher("/User/user-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/user-form.jsp").forward(request, response);
     }
 
     @Override

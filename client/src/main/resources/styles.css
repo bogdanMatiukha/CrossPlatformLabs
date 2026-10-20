@@ -58,6 +58,15 @@
     -fx-background-color: #edf2f8;
 }
 
+.tab-pane .tab:selected {
+    -fx-background-color: #e8efff;
+}
+
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: #245be7;
+    -fx-font-weight: bold;
+}
+
 .tab-pane > .tab-content-area {
     -fx-background-color: #ffffff;
     -fx-background-radius: 8px;
@@ -65,6 +74,21 @@
     -fx-border-radius: 8px;
     -fx-border-width: 1px;
     -fx-padding: 5px;
+}
+
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.tab-pane .tab {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.tab-pane .tab:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
 
 /* Tables */
@@ -109,8 +133,24 @@
     -fx-background-color: #ffffff;
 }
 
+.table-row-cell:odd {
+    -fx-background-color: #fafbfd;
+}
+
 .table-row-cell:hover {
     -fx-background-color: #f1f5fc;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #e8efff;
+}
+
+.table-row-cell:selected .table-cell {
+    -fx-text-fill: #1d4ed8;
+}
+
+.table-view:focused {
+    -fx-background-insets: 0;
 }
 
 .table-view .placeholder .label {
@@ -141,7 +181,15 @@
     -fx-border-color: #bdcbe0;
 }
 
-/* Internal date field */
+.text-field:focused,
+.combo-box:focused,
+.date-picker:focused {
+    -fx-border-color: #4778f5;
+    -fx-border-width: 1px;
+    -fx-background-color: #ffffff;
+}
+
+/* Date picker input field */
 
 .date-picker > .text-field {
     -fx-background-color: transparent;
@@ -214,6 +262,14 @@
     -fx-background-color: #e0e7f1;
 }
 
+.button:pressed {
+    -fx-opacity: 0.85;
+}
+
+.button:focused {
+    -fx-border-color: #a8c2ff;
+}
+
 .primary-button {
     -fx-background-color: #2864eb;
     -fx-text-fill: #ffffff;
@@ -250,7 +306,7 @@
     -fx-background-color: #e0e7f1;
 }
 
-/* Status */
+/* Status label */
 
 .status-label {
     -fx-background-color: #effbf3;

@@ -1,10 +1,10 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="java.util.List" %>
-<%@ page import="model.TransferRecord" %>
+<%@ page import="model.Transfer" %>
 <%@ page import="service.TransferService" %>
 <%
     TransferService transferService = new TransferService();
-    List<TransferRecord> transfers = transferService.getAllTransfers();
+    List<Transfer> transfers = transferService.getAllTransfers();
 %>
 <!DOCTYPE html>
 <html lang="uk">
@@ -33,7 +33,7 @@
         </tr>
 
         <% if (transfers != null) {
-            for (TransferRecord t : transfers) { %>
+            for (Transfer t : transfers) { %>
         <tr>
             <td><%= t.getId() %></td>
             <td><%= t.getRequestId() %></td>

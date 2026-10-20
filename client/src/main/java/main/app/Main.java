@@ -18,7 +18,7 @@ public class Main extends Application {
 
         Scene scene = new Scene(root, 900, 600);
 
-        stage.setTitle("Matiukha Bohdan - 204 TN");
+        stage.setTitle("System for Issuing and Returning Student Property - Система видачі та повернення студентьсокого майна");
         stage.setScene(scene);
         stage.show();
     }
