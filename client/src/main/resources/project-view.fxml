@@ -13,6 +13,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.Tooltip?>
 
 <VBox spacing="14"
       xmlns="http://javafx.com/javafx/21"
@@ -25,8 +26,22 @@
         <Insets top="14" right="16" bottom="12" left="16"/>
     </padding>
 
-    <Label text="Система видачі та повернення университетського майна"
-           styleClass="title-label"/>
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Система видачі та повернення університетського майна"
+               styleClass="title-label"
+               HBox.hgrow="ALWAYS"/>
+
+        <Button fx:id="togglePanelButton"
+                onAction="#handleTogglePanel"
+                styleClass="icon-button">
+            <graphic>
+                <Label text="⌕" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+            </graphic>
+            <tooltip>
+                <Tooltip text="Пошук і фільтри"/>
+            </tooltip>
+        </Button>
+    </HBox>
 
     <TabPane fx:id="mainTabPane" VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE">
 
@@ -94,6 +109,35 @@
         </Tab>
 
     </TabPane>
+
+    <VBox fx:id="searchPanel"
+          spacing="8"
+          visible="false"
+          managed="false"
+          styleClass="form-box">
+
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <TextField fx:id="searchField"
+                       promptText="Пошук за всіма полями..."
+                       HBox.hgrow="ALWAYS"/>
+
+            <ComboBox fx:id="filterFieldCombo"
+                      promptText="Поле для фільтра"
+                      prefWidth="190"
+                      minWidth="150"/>
+
+            <TextField fx:id="filterValueField"
+                       promptText="Значення фільтра"
+                       HBox.hgrow="ALWAYS"/>
+
+            <Button text="Скинути"
+                    onAction="#handleResetFilters"
+                    styleClass="secondary-button"/>
+        </HBox>
+
+        <Label text="Пошук працює за всіма полями. Фільтр обмежує результати вибраним полем."
+               styleClass="search-hint"/>
+    </VBox>
 
     <Label text="Керування записами"
            styleClass="section-label"/>

@@ -23,6 +23,9 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import java.util.Locale;
 
 public class MainController {
     private static final Logger logger = Logger.getLogger(MainController.class.getName());
@@ -79,6 +82,34 @@ public class MainController {
     @FXML private ProgressBar requestProgressBar;
     @FXML private Button importCsvButton;
 
+    @FXML private VBox formContainer;
+    @FXML private VBox searchPanel;
+
+    @FXML private Button togglePanelButton;
+    @FXML private TextField searchField;
+    @FXML private TextField filterValueField;
+    @FXML private ComboBox<String> filterFieldCombo;
+
+    private final ObservableList<User> allUsers =
+            FXCollections.observableArrayList();
+    private final ObservableList<PropertyItem> allProperties =
+            FXCollections.observableArrayList();
+    private final ObservableList<IssueRequest> allRequests =
+            FXCollections.observableArrayList();
+    private final ObservableList<Transfer> allTransfers =
+            FXCollections.observableArrayList();
+
+    private final FilteredList<User> filteredUsers =
+            new FilteredList<>(allUsers);
+    private final FilteredList<PropertyItem> filteredProperties =
+            new FilteredList<>(allProperties);
+    private final FilteredList<IssueRequest> filteredRequests =
+            new FilteredList<>(allRequests);
+    private final FilteredList<Transfer> filteredTransfers =
+            new FilteredList<>(allTransfers);
+
+    private boolean searchPanelVisible;
+
     private final HttpUniverPropertyClient client = new HttpUniverPropertyClient();
 
     @FXML
@@ -127,6 +158,170 @@ public class MainController {
         setupSelectionListeners();
         loadAllData();
         updateFormVisibility(mainTabPane.getSelectionModel().getSelectedItem());
+
+        userTable.setItems(filteredUsers);
+        propertyTable.setItems(filteredProperties);
+        requestTable.setItems(filteredRequests);
+        transferTable.setItems(filteredTransfers);
+
+        searchField.textProperty().addListener(
+                (obs, oldValue, newValue) -> applyFilters()
+        );
+
+        filterValueField.textProperty().addListener(
+                (obs, oldValue, newValue) -> applyFilters()
+        );
+
+        filterFieldCombo.valueProperty().addListener(
+                (obs, oldValue, newValue) -> applyFilters()
+        );
+
+        mainTabPane.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldTab, newTab) -> {
+                    updateFilterOptions(newTab);
+                    applyFilters();
+                });
+
+        updateFilterOptions(mainTabPane.getSelectionModel().getSelectedItem());
+
+        searchPanel.setVisible(false);
+        searchPanel.setManaged(false);
+    }
+
+    @FXML
+    private void handleTogglePanel() {
+        searchPanelVisible = !searchPanelVisible;
+
+        formContainer.setVisible(!searchPanelVisible);
+        formContainer.setManaged(!searchPanelVisible);
+
+        searchPanel.setVisible(searchPanelVisible);
+        searchPanel.setManaged(searchPanelVisible);
+
+        Label icon = (Label) togglePanelButton.getGraphic();
+        icon.setText(searchPanelVisible ? "⚙" : "⌕");
+        togglePanelButton.setTooltip(new Tooltip(
+                searchPanelVisible
+                        ? "Панель керування"
+                        : "Пошук і фільтри"
+        ));
+    }
+
+    private void updateFilterOptions(Tab tab) {
+        if (tab == requestTab) {
+            filterFieldCombo.setItems(FXCollections.observableArrayList(
+                    "Усі поля", "ID", "ID користувача",
+                    "ID майна", "Статус", "Індекс"
+            ));
+        } else if (tab == userTab) {
+            filterFieldCombo.setItems(FXCollections.observableArrayList(
+                    "Усі поля", "ID", "ПІБ", "Роль", "Email"
+            ));
+        } else if (tab == propertyTab) {
+            filterFieldCombo.setItems(FXCollections.observableArrayList(
+                    "Усі поля", "ID", "Інвентарний номер",
+                    "Назва", "Категорія", "Статус"
+            ));
+        } else if (tab == transferTab) {
+            filterFieldCombo.setItems(FXCollections.observableArrayList(
+                    "Усі поля", "ID", "ID заявки",
+                    "Дата передачі", "Дата повернення", "Примітки"
+            ));
+        }
+
+        filterFieldCombo.getSelectionModel().selectFirst();
+    }
+
+    private boolean containsText(Object value, String text) {
+        return value != null
+                && String.valueOf(value).toLowerCase(Locale.ROOT)
+                .contains(text);
+    }
+
+    private boolean matches(String text, Object... values) {
+        for (Object value : values) {
+            if (containsText(value, text)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void applyFilters() {
+        String search = searchField.getText() == null
+                ? "" : searchField.getText().trim().toLowerCase(Locale.ROOT);
+
+        String field = filterFieldCombo.getValue();
+        String filter = filterValueField.getText() == null
+                ? "" : filterValueField.getText().trim().toLowerCase(Locale.ROOT);
+
+        filteredUsers.setPredicate(user ->
+                matches(search, user.getId(), user.getFullName(),
+                        user.getRole(), user.getEmail())
+                        && matchesFilter(field, filter,
+                        new String[]{"ID", "ПІБ", "Роль", "Email"},
+                        new Object[]{user.getId(), user.getFullName(),
+                                user.getRole(), user.getEmail()})
+        );
+
+        filteredProperties.setPredicate(item ->
+                matches(search, item.getId(), item.getInventoryNumber(),
+                        item.getName(), item.getCategory(), item.getStatusItem())
+                        && matchesFilter(field, filter,
+                        new String[]{"ID", "Інвентарний номер", "Назва",
+                                "Категорія", "Статус"},
+                        new Object[]{item.getId(), item.getInventoryNumber(),
+                                item.getName(), item.getCategory(), item.getStatusItem()})
+        );
+
+        filteredRequests.setPredicate(req ->
+                matches(search, req.getId(), req.getUserId(), req.getPropertyId(),
+                        req.getRequestStatus(), req.getIntegralIndex())
+                        && matchesFilter(field, filter,
+                        new String[]{"ID", "ID користувача", "ID майна",
+                                "Статус", "Індекс"},
+                        new Object[]{req.getId(), req.getUserId(),
+                                req.getPropertyId(), req.getRequestStatus(),
+                                req.getIntegralIndex()})
+        );
+
+        filteredTransfers.setPredicate(tr ->
+                matches(search, tr.getId(), tr.getRequestId(),
+                        tr.getTransferDate(), tr.getReturnDate(), tr.getNotes())
+                        && matchesFilter(field, filter,
+                        new String[]{"ID", "ID заявки", "Дата передачі",
+                                "Дата повернення", "Примітки"},
+                        new Object[]{tr.getId(), tr.getRequestId(),
+                                tr.getTransferDate(), tr.getReturnDate(), tr.getNotes()})
+        );
+    }
+
+    private boolean matchesFilter(
+            String selectedField,
+            String filter,
+            String[] fieldNames,
+            Object[] values) {
+
+        if (filter.isEmpty() || selectedField == null
+                || selectedField.equals("Усі поля")) {
+            return true;
+        }
+
+        for (int i = 0; i < fieldNames.length; i++) {
+            if (fieldNames[i].equals(selectedField)) {
+                return containsText(values[i], filter);
+            }
+        }
+
+        return true;
+    }
+
+    @FXML
+    private void handleResetFilters() {
+        searchField.clear();
+        filterValueField.clear();
+        filterFieldCombo.getSelectionModel().selectFirst();
+        applyFilters();
     }
 
     private void setupButtonBindings() {
@@ -556,10 +751,12 @@ public class MainController {
                 List<Transfer> trans = client.getAllTransfers();
 
                 javafx.application.Platform.runLater(() -> {
-                    userTable.setItems(FXCollections.observableArrayList(users));
-                    propertyTable.setItems(FXCollections.observableArrayList(props));
-                    requestTable.setItems(FXCollections.observableArrayList(reqs));
-                    transferTable.setItems(FXCollections.observableArrayList(trans));
+                    allUsers.setAll(users);
+                    allProperties.setAll(props);
+                    allRequests.setAll(reqs);
+                    allTransfers.setAll(trans);
+
+                    applyFilters();
                 });
 
                 updateProgress(4, 4);

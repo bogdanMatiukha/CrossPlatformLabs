@@ -58,6 +58,42 @@
     -fx-background-color: #edf2f8;
 }
 
+/* Header icon button */
+
+.icon-button {
+    -fx-background-color: #e8efff;
+    -fx-text-fill: #245be7;
+    -fx-font-size: 100px;
+    -fx-font-weight: bold;
+    -fx-padding: 4px;
+    -fx-min-width: 38px;
+    -fx-pref-width: 38px;
+    -fx-min-height: 38px;
+    -fx-pref-height: 38px;
+    -fx-background-radius: 8px;
+    -fx-cursor: hand;
+}
+
+.icon-button:hover {
+    -fx-background-color: #d8e5ff;
+}
+
+.icon-button:pressed {
+    -fx-background-color: #c6d8ff;
+}
+
+/* Search panel */
+
+.search-hint {
+    -fx-font-size: 11px;
+    -fx-text-fill: #64748b;
+    -fx-padding: 2px 0 0 2px;
+}
+
+.form-box .combo-box {
+    -fx-background-color: #ffffff;
+}
+
 .tab-pane .tab:selected {
     -fx-background-color: #e8efff;
 }
