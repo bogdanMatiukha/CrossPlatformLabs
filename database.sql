@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS issue_requests (
 CREATE TABLE IF NOT EXISTS transfer_records (
      id INT AUTO_INCREMENT PRIMARY KEY,
      request_id INT NOT NULL,
-     transfer_date DATE NOT NULL,
+     transfer_date DATE DEFAULT NULL,
      return_date DATE DEFAULT NULL,
      notes TEXT,
      FOREIGN KEY (request_id) REFERENCES issue_requests(id) ON DELETE CASCADE

@@ -4,6 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import model.IssueRequest;
 import status.RequestState;
 import service.IssueRequestService;
+import model.PropertyItem;
+import model.Transfer;
+import service.PropertyService;
+import service.TransferService;
+import status.ItemState;
+import java.time.LocalDate;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -16,10 +22,14 @@ import java.util.Map;
 public class IssueRequestServlet extends HttpServlet {
     private IssueRequestService requestService;
     private ObjectMapper mapper;
+    private PropertyService propertyService;
+    private TransferService transferService;
 
     @Override
     public void init() {
         requestService = new IssueRequestService();
+        propertyService = new PropertyService();
+        transferService = new TransferService();
         mapper = new ObjectMapper();
     }
 
@@ -120,18 +130,133 @@ public class IssueRequestServlet extends HttpServlet {
         sendAfterChange(request, response);
     }
 
-    private void updateRequest(HttpServletRequest request, HttpServletResponse response)
+
+    private void updateRequest(HttpServletRequest request,
+                               HttpServletResponse response)
             throws ServletException, IOException {
+
         int id = Integer.parseInt(request.getParameter("id"));
         int userId = Integer.parseInt(request.getParameter("userId"));
         int propertyId = Integer.parseInt(request.getParameter("propertyId"));
-        RequestState status = RequestState.valueOf(request.getParameter("requestStatus"));
+
+        RequestState status = RequestState.valueOf(
+                request.getParameter("requestStatus")
+        );
+
         int f1 = Integer.parseInt(request.getParameter("urgencyF1"));
         int f2 = Integer.parseInt(request.getParameter("criticalityF2"));
         int f3 = Integer.parseInt(request.getParameter("deficitF3"));
 
-        IssueRequest issueRequest = new IssueRequest(id, userId, propertyId, status, f1, f2, f3, IssueRequest.calculateIntegralIndex(f1, f2, f3));
+        IssueRequest oldRequest = requestService.getRequestById(id);
+
+        if (oldRequest == null) {
+            if (wantsJson(request)) {
+                writeJsonError(
+                        response,
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "Заявку не знайдено"
+                );
+            } else {
+                response.sendRedirect("requests");
+            }
+            return;
+        }
+
+        RequestState oldStatus = oldRequest.getRequestStatus();
+
+        IssueRequest issueRequest = new IssueRequest(
+                id,
+                userId,
+                propertyId,
+                status,
+                f1,
+                f2,
+                f3,
+                IssueRequest.calculateIntegralIndex(f1, f2, f3)
+        );
+
         requestService.updateRequest(issueRequest);
+
+        PropertyItem item = propertyService.getPropertyById(propertyId);
+
+        List<Transfer> transfers = transferService.getAllTransfers();
+
+        if (status == RequestState.APPROVED
+                && oldStatus != RequestState.APPROVED) {
+
+            boolean transferExists = transfers.stream()
+                    .anyMatch(transfer ->
+                            transfer.getRequestId() == id
+                                    && transfer.getTransferDate() == null
+                                    && transfer.getReturnDate() == null
+                    );
+
+            if (!transferExists) {
+                Transfer transfer = new Transfer(
+                        0,
+                        id,
+                        (LocalDate) null,
+                        null,
+                        ""
+                );
+
+                transferService.addTransfer(transfer);
+            }
+        }
+
+        if (status == RequestState.PUBLISHED
+                && oldStatus != RequestState.PUBLISHED) {
+
+            Transfer transfer = transfers.stream()
+                    .filter(t ->
+                            t.getRequestId() == id
+                                    && t.getReturnDate() == null
+                    )
+                    .findFirst()
+                    .orElse(null);
+
+            if (transfer == null) {
+                transfer = new Transfer(
+                        0,
+                        id,
+                        LocalDate.now(),
+                        null,
+                        ""
+                );
+
+                transferService.addTransfer(transfer);
+            } else if (transfer.getTransferDate() == null) {
+                transfer.setTransferDate(LocalDate.now());
+                transferService.updateTransfer(transfer);
+            }
+
+            if (item != null) {
+                item.setStatusItem(ItemState.UNAVAILABLE);
+                propertyService.updateProperty(item);
+            }
+        }
+
+        if (status == RequestState.RETURNED
+                && oldStatus != RequestState.RETURNED) {
+
+            transfers.stream()
+                    .filter(t ->
+                            t.getRequestId() == id
+                                    && t.getTransferDate() != null
+                                    && t.getReturnDate() == null
+                    )
+                    .findFirst()
+                    .ifPresent(transfer -> {
+                        transfer.setReturnDate(LocalDate.now());
+                        transferService.updateTransfer(transfer);
+                    });
+
+            if (item != null) {
+                item.setStatusItem(ItemState.AVAILABLE);
+                propertyService.updateProperty(item);
+            }
+        }
+
         sendAfterChange(request, response);
     }
 
