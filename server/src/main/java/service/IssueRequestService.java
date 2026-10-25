@@ -53,6 +53,12 @@ public class IssueRequestService {
         if (item == null) {
             throw new IllegalArgumentException("Майно не знайдено");
         }
+
+        if (item.getStatusItem() == ItemState.REPAIR) {
+            throw new IllegalStateException(
+                    "Майно перебуває на ремонті. Створення або зміна заявки неможливі."
+            );
+        }
     }
 
     private void validateFactor(String name, int value) {
@@ -68,11 +74,11 @@ public class IssueRequestService {
 
         PropertyItem item = propertyDAO.getPropertyById(request.getPropertyId());
 
-        if (item.getStatusItem() == ItemState.UNAVAILABLE
+        if (item.getStatusItem() != ItemState.AVAILABLE
                 || isPropertyPublishedInAnotherRequest(
                 request.getPropertyId(), -1)) {
             throw new IllegalStateException(
-                    "Майно наразі недоступне. Створити заявку неможливо."
+                    "Майно недоступне або перебуває на ремонті. Створити заявку неможливо."
             );
         }
 
@@ -141,11 +147,11 @@ public class IssueRequestService {
         if (newStatus == RequestState.PUBLISHED
                 && oldStatus != RequestState.PUBLISHED) {
 
-            if (item.getStatusItem() == ItemState.UNAVAILABLE
+            if (item.getStatusItem() != ItemState.AVAILABLE
                     || isPropertyPublishedInAnotherRequest(
                     request.getPropertyId(), request.getId())) {
                 throw new IllegalStateException(
-                        "Майно наразі недоступне"
+                        "Майно недоступне або перебуває на ремонті"
                 );
             }
         }
