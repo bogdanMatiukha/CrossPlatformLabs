@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS property_items (
     inventory_number VARCHAR(50) NOT NULL UNIQUE,
     name VARCHAR(150) NOT NULL,
     category VARCHAR(100) NOT NULL,
-    status_item ENUM('AVAILABLE', 'UNAVAILABLE')
+    status_item ENUM('AVAILABLE', 'UNAVAILABLE', 'REPAIR')
     NOT NULL DEFAULT 'AVAILABLE'
     ) ENGINE=InnoDB;
 
