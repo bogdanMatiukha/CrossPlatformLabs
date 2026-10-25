@@ -118,18 +118,50 @@ public class IssueRequestServlet extends HttpServlet {
 
     private void insertRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         int userId = Integer.parseInt(request.getParameter("userId"));
         int propertyId = Integer.parseInt(request.getParameter("propertyId"));
-        RequestState status = RequestState.valueOf(request.getParameter("requestStatus"));
+
+        String selectedStatus = request.getParameter("requestStatus");
+
         int f1 = Integer.parseInt(request.getParameter("urgencyF1"));
         int f2 = Integer.parseInt(request.getParameter("criticalityF2"));
         int f3 = Integer.parseInt(request.getParameter("deficitF3"));
 
-        IssueRequest issueRequest = new IssueRequest(userId, propertyId, status, f1, f2, f3);
+        IssueRequest issueRequest = new IssueRequest(
+                userId,
+                propertyId,
+                RequestState.CREATED,
+                f1,
+                f2,
+                f3
+        );
+
         requestService.addRequest(issueRequest);
+
+        if (selectedStatus != null
+                && !RequestState.CREATED.name().equalsIgnoreCase(selectedStatus)) {
+
+            if (wantsJson(request)) {
+                response.setStatus(HttpServletResponse.SC_CREATED);
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+
+                mapper.writeValue(response.getWriter(), Map.of(
+                        "message", "Заявки спочатку створюються зі статусом CREATED",
+                        "request", issueRequest
+                ));
+                return;
+            }
+
+            response.sendRedirect(
+                    "index.jsp?tab=requests&message=request_created"
+            );
+            return;
+        }
+
         sendAfterChange(request, response);
     }
-
 
     private void updateRequest(HttpServletRequest request,
                                HttpServletResponse response)
@@ -163,6 +195,72 @@ public class IssueRequestServlet extends HttpServlet {
         }
 
         RequestState oldStatus = oldRequest.getRequestStatus();
+
+
+        if (oldStatus != status) {
+            boolean allowed = switch (oldStatus) {
+                case CREATED ->
+                        status == RequestState.APPROVED
+                                || status == RequestState.CANCELLED;
+
+                case APPROVED ->
+                        status == RequestState.PUBLISHED
+                                || status == RequestState.CANCELLED;
+
+                case PUBLISHED ->
+                        status == RequestState.RETURNED;
+
+                case RETURNED, CANCELLED -> false;
+            };
+
+            if (!allowed) {
+                String message = "Не можна змінити статус з "
+                        + oldStatus + " на " + status;
+
+                if (wantsJson(request)) {
+                    writeJsonError(
+                            response,
+                            HttpServletResponse.SC_CONFLICT,
+                            message
+                    );
+                } else {
+                    response.sendRedirect(
+                            "index.jsp?tab=requests&error=invalid_status"
+                    );
+                }
+
+                return;
+            }
+        }
+
+
+        // Check whether the property is already issued
+        if (status == RequestState.PUBLISHED
+                && oldStatus != RequestState.PUBLISHED) {
+
+            PropertyItem item = propertyService.getPropertyById(propertyId);
+
+            boolean alreadyPublished =
+                    requestService.isPropertyPublishedInAnotherRequest(propertyId, id);
+
+            if (item == null || alreadyPublished
+                    || item.getStatusItem() == ItemState.UNAVAILABLE) {
+
+                if (wantsJson(request)) {
+                    writeJsonError(
+                            response,
+                            HttpServletResponse.SC_CONFLICT,
+                            "Товар наразі недоступний"
+                    );
+                } else {
+                    response.sendRedirect(
+                            "index.jsp?tab=requests&error=property_unavailable"
+                    );
+                }
+
+                return;
+            }
+        }
 
         IssueRequest issueRequest = new IssueRequest(
                 id,

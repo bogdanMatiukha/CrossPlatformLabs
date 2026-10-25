@@ -40,7 +40,7 @@ public class PropertyServlet extends HttpServlet {
                 default -> listProperties(request, response);
             }
         } catch (Exception e) {
-            handleError(response, e);
+            handleError(request, response, e);
         }
     }
 
@@ -78,7 +78,7 @@ public class PropertyServlet extends HttpServlet {
                 writeJsonError(response, HttpServletResponse.SC_BAD_REQUEST, "Невідома операція");
             }
         } catch (Exception e) {
-            handleError(response, e);
+            handleError(request, response, e);
         }
     }
 
@@ -143,7 +143,33 @@ public class PropertyServlet extends HttpServlet {
         writeJson(response, Map.of("error", message));
     }
 
-    private void handleError(HttpServletResponse response, Exception e) throws IOException {
-        writeJsonError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Помилка сервера: " + e.getMessage());
+    private void handleError(HttpServletRequest request,
+                             HttpServletResponse response,
+                             Exception e) throws IOException {
+
+        if (e instanceof IllegalStateException
+                || e instanceof IllegalArgumentException) {
+
+            if (wantsJson(request)) {
+                writeJsonError(
+                        response,
+                        HttpServletResponse.SC_CONFLICT,
+                        e.getMessage()
+                );
+            } else {
+                response.sendRedirect(
+                        request.getContextPath()
+                                + "/index.jsp?tab=properties&error=property_unavailable"
+                );
+            }
+
+            return;
+        }
+
+        writeJsonError(
+                response,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                "Помилка сервера: " + e.getMessage()
+        );
     }
 }

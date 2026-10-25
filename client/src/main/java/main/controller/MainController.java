@@ -398,7 +398,7 @@ public class MainController {
                 reqUserIdField.setText(String.valueOf(selected.getUserId()));
                 reqPropIdField.setText(String.valueOf(selected.getPropertyId()));
                 if (selected.getRequestStatus() != null) {
-                    reqStatusCombo.setValue(selected.getRequestStatus());
+                    updateAllowedRequestStatuses(selected.getRequestStatus());
                 }
                 reqF1Field.setText(String.valueOf(selected.getUrgencyF1()));
                 reqF2Field.setText(String.valueOf(selected.getCriticalityF2()));
@@ -422,6 +422,34 @@ public class MainController {
         clearForm();
     }
 
+
+    private void updateAllowedRequestStatuses(RequestState currentStatus) {
+        List<RequestState> allowedStatuses = switch (currentStatus) {
+            case CREATED -> List.of(
+                    RequestState.CREATED,
+                    RequestState.APPROVED,
+                    RequestState.CANCELLED
+            );
+            case APPROVED -> List.of(
+                    RequestState.APPROVED,
+                    RequestState.PUBLISHED,
+                    RequestState.CANCELLED
+            );
+            case PUBLISHED -> List.of(
+                    RequestState.PUBLISHED,
+                    RequestState.RETURNED
+            );
+            case RETURNED -> List.of(RequestState.RETURNED);
+            case CANCELLED -> List.of(RequestState.CANCELLED);
+        };
+
+        reqStatusCombo.setItems(
+                FXCollections.observableArrayList(allowedStatuses)
+        );
+        reqStatusCombo.setValue(currentStatus);
+    }
+
+
     @FXML
     private void handleAdd() {
         Tab activeTab = mainTabPane.getSelectionModel().getSelectedItem();
@@ -436,7 +464,7 @@ public class MainController {
             } else if (activeTab == requestTab) {
                 int userId = Integer.parseInt(reqUserIdField.getText().trim());
                 int propId = Integer.parseInt(reqPropIdField.getText().trim());
-                RequestState state = reqStatusCombo.getValue();
+                RequestState state = RequestState.CREATED;
                 int f1 = Integer.parseInt(reqF1Field.getText().trim());
                 int f2 = Integer.parseInt(reqF2Field.getText().trim());
                 int f3 = Integer.parseInt(reqF3Field.getText().trim());
@@ -523,11 +551,17 @@ public class MainController {
     @FXML
     private void clearForm() {
         userFullNameField.clear(); userRoleField.clear(); userEmailField.clear();
+
         propInvField.clear(); propNameField.clear(); propCatField.clear();
-        if (!propStatusCombo.getItems().isEmpty()) propStatusCombo.getSelectionModel().selectFirst();
+        if (!propStatusCombo.getItems().isEmpty()) {
+            propStatusCombo.getSelectionModel().selectFirst();
+        }
 
         reqUserIdField.clear(); reqPropIdField.clear();
-        if (!reqStatusCombo.getItems().isEmpty()) reqStatusCombo.getSelectionModel().selectFirst();
+        reqStatusCombo.setItems(
+                FXCollections.observableArrayList(RequestState.values())
+        );
+        reqStatusCombo.setValue(RequestState.CREATED);
         reqF1Field.clear(); reqF2Field.clear(); reqF3Field.clear();
 
         transReqIdField.clear(); transDatePicker.setValue(null); transReturnDatePicker.setValue(null); transNotesField.clear();

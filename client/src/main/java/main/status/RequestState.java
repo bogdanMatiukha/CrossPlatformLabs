@@ -1,5 +1,5 @@
 package main.status;
 
 public enum RequestState {
-    CREATED, APPROVED, PUBLISHED, RETURNED
+    CREATED, APPROVED, PUBLISHED, RETURNED, CANCELLED
 }
