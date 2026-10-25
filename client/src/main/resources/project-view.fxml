@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
@@ -43,9 +42,10 @@
         </Button>
     </HBox>
 
-    <TabPane fx:id="mainTabPane" VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE">
+    <TabPane fx:id="mainTabPane"
+             VBox.vgrow="ALWAYS"
+             tabClosingPolicy="UNAVAILABLE">
 
-        <!-- Заявки -->
         <Tab fx:id="requestTab" text="Заявки на видачу">
             <TableView fx:id="requestTable" VBox.vgrow="ALWAYS">
                 <columns>
@@ -61,7 +61,6 @@
             </TableView>
         </Tab>
 
-        <!-- Користувачі -->
         <Tab fx:id="userTab" text="Користувачі">
             <TableView fx:id="userTable" VBox.vgrow="ALWAYS">
                 <columns>
@@ -76,7 +75,6 @@
             </TableView>
         </Tab>
 
-        <!-- Майно -->
         <Tab fx:id="propertyTab" text="Інвентар майна">
             <TableView fx:id="propertyTable" VBox.vgrow="ALWAYS">
                 <columns>
@@ -92,7 +90,6 @@
             </TableView>
         </Tab>
 
-        <!-- Передачі -->
         <Tab fx:id="transferTab" text="Журнал передач">
             <TableView fx:id="transferTable" VBox.vgrow="ALWAYS">
                 <columns>
@@ -110,6 +107,7 @@
 
     </TabPane>
 
+    <!-- Панель пошуку -->
     <VBox fx:id="searchPanel"
           spacing="8"
           visible="false"
@@ -117,18 +115,25 @@
           styleClass="form-box">
 
         <HBox spacing="8" alignment="CENTER_LEFT">
-            <TextField fx:id="searchField"
-                       promptText="Пошук за всіма полями..."
-                       HBox.hgrow="ALWAYS"/>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Пошук"/>
+                <TextField fx:id="searchField"
+                           promptText="Пошук за всіма полями..."/>
+            </VBox>
 
-            <ComboBox fx:id="filterFieldCombo"
-                      promptText="Поле для фільтра"
-                      prefWidth="190"
-                      minWidth="150"/>
+            <VBox spacing="4">
+                <Label text="Поле для фільтра"/>
+                <ComboBox fx:id="filterFieldCombo"
+                          promptText="Виберіть поле"
+                          prefWidth="190"
+                          minWidth="150"/>
+            </VBox>
 
-            <TextField fx:id="filterValueField"
-                       promptText="Значення фільтра"
-                       HBox.hgrow="ALWAYS"/>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Значення фільтра"/>
+                <TextField fx:id="filterValueField"
+                           promptText="Введіть значення"/>
+            </VBox>
 
             <Button text="Скинути"
                     onAction="#handleResetFilters"
@@ -142,69 +147,192 @@
     <Label text="Керування записами"
            styleClass="section-label"/>
 
-    <!-- Динамічні панелі для введення даних -->
-    <VBox fx:id="formContainer" spacing="8" styleClass="form-box">
-        <!-- Форма для Користувачів -->
+    <!-- Форма управління записами -->
+    <VBox fx:id="formContainer" spacing="10" styleClass="form-box">
+
+        <!-- Користувачі -->
         <HBox fx:id="userFormBox" spacing="8">
-            <TextField fx:id="userFullNameField" promptText="ПІБ Користувача" HBox.hgrow="ALWAYS"/>
-            <TextField fx:id="userRoleField" promptText="Роль (наприклад, Студент)" HBox.hgrow="ALWAYS"/>
-            <TextField fx:id="userEmailField" promptText="Email" HBox.hgrow="ALWAYS"/>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="ПІБ користувача"/>
+                <TextField fx:id="userFullNameField"
+                           promptText="Введіть ПІБ"/>
+            </VBox>
+
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Роль"/>
+                <TextField fx:id="userRoleField"
+                           promptText="Наприклад, Студент"/>
+            </VBox>
+
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Email"/>
+                <TextField fx:id="userEmailField"
+                           promptText="Введіть email"/>
+            </VBox>
         </HBox>
 
-        <!-- Форма для Майна -->
-        <HBox fx:id="propertyFormBox" spacing="8" managed="false" visible="false">
-            <TextField fx:id="propInvField" promptText="Інвентарний номер" HBox.hgrow="ALWAYS"/>
-            <TextField fx:id="propNameField" promptText="Назва майна" HBox.hgrow="ALWAYS"/>
-            <TextField fx:id="propCatField" promptText="Категорія" HBox.hgrow="ALWAYS"/>
-            <ComboBox fx:id="propStatusCombo" promptText="Виберіть статус майна" prefWidth="180" minWidth="150" maxWidth="180"/>
+        <!-- Майно -->
+        <HBox fx:id="propertyFormBox"
+              spacing="8"
+              managed="false"
+              visible="false">
+
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Інвентарний номер"/>
+                <TextField fx:id="propInvField"
+                           promptText="Наприклад, INV-001"/>
+            </VBox>
+
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Назва майна"/>
+                <TextField fx:id="propNameField"
+                           promptText="Введіть назву"/>
+            </VBox>
+
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Категорія"/>
+                <TextField fx:id="propCatField"
+                           promptText="Введіть категорію"/>
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="Статус майна"/>
+                <ComboBox fx:id="propStatusCombo"
+                          promptText="Виберіть статус"
+                          prefWidth="180"
+                          minWidth="150"
+                          maxWidth="180"/>
+            </VBox>
         </HBox>
 
-        <!-- Форма для Заявок -->
-        <VBox fx:id="requestFormBox" spacing="8" managed="false" visible="false">
+        <!-- Заявки -->
+        <VBox fx:id="requestFormBox"
+              spacing="10"
+              managed="false"
+              visible="false">
+
             <HBox spacing="8">
-                <TextField fx:id="reqUserIdField" promptText="ID Користувача" HBox.hgrow="ALWAYS"/>
-                <TextField fx:id="reqPropIdField" promptText="ID Майна" HBox.hgrow="ALWAYS"/>
-                <ComboBox fx:id="reqStatusCombo" promptText="Статус заявки" prefWidth="180" minWidth="150" maxWidth="180"/>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="ID користувача"/>
+                    <TextField fx:id="reqUserIdField"
+                               promptText="Введіть ID користувача"/>
+                </VBox>
+
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="ID майна"/>
+                    <TextField fx:id="reqPropIdField"
+                               promptText="Введіть ID майна"/>
+                </VBox>
+
+                <VBox spacing="4">
+                    <Label text="Статус заявки"/>
+                    <ComboBox fx:id="reqStatusCombo"
+                              promptText="Виберіть статус"
+                              minWidth="275"
+                              maxWidth="800"/>
+                </VBox>
             </HBox>
+
             <HBox spacing="8">
-                <TextField fx:id="reqF1Field" promptText="F1 (Терміновість)" HBox.hgrow="ALWAYS"/>
-                <TextField fx:id="reqF2Field" promptText="F2 (Критичність)" HBox.hgrow="ALWAYS"/>
-                <TextField fx:id="reqF3Field" promptText="F3 (Дефіцит)" HBox.hgrow="ALWAYS"/>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="F1 — Терміновість"/>
+                    <TextField fx:id="reqF1Field"
+                               promptText="Від 0 до 100"/>
+                </VBox>
+
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="F2 — Критичність"/>
+                    <TextField fx:id="reqF2Field"
+                               promptText="Від 0 до 100"/>
+                </VBox>
+
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="F3 — Дефіцит"/>
+                    <TextField fx:id="reqF3Field"
+                               promptText="Від 0 до 100"/>
+                </VBox>
             </HBox>
         </VBox>
 
-        <!-- Форма для Передач -->
-        <HBox fx:id="transferFormBox" spacing="8" managed="false" visible="false">
-            <TextField fx:id="transReqIdField" promptText="ID Заявки" HBox.hgrow="ALWAYS"/>
-            <DatePicker fx:id="transDatePicker" promptText="Дата передачі" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
-            <DatePicker fx:id="transReturnDatePicker" promptText="Дата повернення" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
-            <TextField fx:id="transNotesField" promptText="Примітки" HBox.hgrow="ALWAYS"/>
+        <!-- Передачі -->
+        <HBox fx:id="transferFormBox"
+              spacing="8"
+              managed="false"
+              visible="false">
+
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="ID заявки"/>
+                <TextField fx:id="transReqIdField"
+                           promptText="Введіть ID заявки"/>
+            </VBox>
+
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Дата передачі"/>
+                <DatePicker fx:id="transDatePicker"
+                            promptText="Виберіть дату"
+                            maxWidth="Infinity"/>
+            </VBox>
+
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Дата повернення"/>
+                <DatePicker fx:id="transReturnDatePicker"
+                            promptText="Виберіть дату"
+                            maxWidth="Infinity"/>
+            </VBox>
+
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Примітки"/>
+                <TextField fx:id="transNotesField"
+                           promptText="Введіть примітки"/>
+            </VBox>
         </HBox>
     </VBox>
 
     <!-- Кнопки управління -->
     <HBox spacing="10">
-        <Button text="Додати" onAction="#handleAdd" styleClass="primary-button"/>
-        <Button fx:id="updateButton" text="Редагувати" onAction="#handleUpdate" styleClass="warning-button"/>
-        <Button fx:id="deleteButton" text="Видалити" onAction="#handleDelete" styleClass="danger-button"/>
-        <Button fx:id="importCsvButton" text="Імпорт CSV" onAction="#handleImportCsv" styleClass="primary-button"/>
-        <Button text="Очистити форму" onAction="#clearForm" styleClass="secondary-button"/>
-        <Button text="Оновити список" onAction="#handleRefresh" styleClass="primary-button"/>
+        <Button text="Додати"
+                onAction="#handleAdd"
+                styleClass="primary-button"/>
+
+        <Button fx:id="updateButton"
+                text="Редагувати"
+                onAction="#handleUpdate"
+                styleClass="warning-button"/>
+
+        <Button fx:id="deleteButton"
+                text="Видалити"
+                onAction="#handleDelete"
+                styleClass="danger-button"/>
+
+        <Button fx:id="importCsvButton"
+                text="Імпорт CSV"
+                onAction="#handleImportCsv"
+                styleClass="primary-button"/>
+
+        <Button text="Очистити форму"
+                onAction="#clearForm"
+                styleClass="secondary-button"/>
+
+        <Button text="Оновити список"
+                onAction="#handleRefresh"
+                styleClass="primary-button"/>
     </HBox>
 
     <VBox spacing="5">
-        <ProgressBar
-                fx:id="requestProgressBar"
-                progress="0"
-                maxWidth="Infinity"
-                prefWidth="1000"
-                prefHeight="18"
-                minHeight="18"
-                visible="false"
-                managed="false"
-                styleClass="request-progress"/>
+        <ProgressBar fx:id="requestProgressBar"
+                     progress="0"
+                     maxWidth="Infinity"
+                     prefWidth="1000"
+                     prefHeight="18"
+                     minHeight="18"
+                     visible="false"
+                     managed="false"
+                     styleClass="request-progress"/>
 
-        <Label fx:id="statusLabel" text="Готово" maxWidth="Infinity" styleClass="status-label"/>
+        <Label fx:id="statusLabel"
+               text="Готово"
+               maxWidth="Infinity"
+               styleClass="status-label"/>
     </VBox>
 
 </VBox>

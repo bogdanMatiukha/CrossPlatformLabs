@@ -34,8 +34,8 @@ CREATE TABLE IF NOT EXISTS issue_requests (
     criticality_f2 INT DEFAULT 0,
     deficit_f3 INT DEFAULT 0,
     integral_index DOUBLE DEFAULT 0.0,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (property_id) REFERENCES property_items(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
+    FOREIGN KEY (property_id) REFERENCES property_items(id) ON DELETE RESTRICT
     ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS transfer_records (
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS transfer_records (
     transfer_date DATE DEFAULT NULL,
     return_date DATE DEFAULT NULL,
     notes TEXT,
-    FOREIGN KEY (request_id) REFERENCES issue_requests(id) ON DELETE CASCADE
+    FOREIGN KEY (request_id) REFERENCES issue_requests(id) ON DELETE RESTRICT
     ) ENGINE=InnoDB;
 
 INSERT INTO users (full_name, role, email) VALUES

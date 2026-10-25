@@ -163,199 +163,61 @@ public class IssueRequestServlet extends HttpServlet {
         sendAfterChange(request, response);
     }
 
-    private void updateRequest(HttpServletRequest request,
-                               HttpServletResponse response)
-            throws ServletException, IOException {
+    private void updateRequest(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
 
-        int id = Integer.parseInt(request.getParameter("id"));
-        int userId = Integer.parseInt(request.getParameter("userId"));
-        int propertyId = Integer.parseInt(request.getParameter("propertyId"));
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            int userId = Integer.parseInt(request.getParameter("userId"));
+            int propertyId = Integer.parseInt(request.getParameter("propertyId"));
 
-        RequestState status = RequestState.valueOf(
-                request.getParameter("requestStatus")
-        );
+            RequestState status = RequestState.valueOf(
+                    request.getParameter("requestStatus")
+            );
 
-        int f1 = Integer.parseInt(request.getParameter("urgencyF1"));
-        int f2 = Integer.parseInt(request.getParameter("criticalityF2"));
-        int f3 = Integer.parseInt(request.getParameter("deficitF3"));
+            int f1 = Integer.parseInt(request.getParameter("urgencyF1"));
+            int f2 = Integer.parseInt(request.getParameter("criticalityF2"));
+            int f3 = Integer.parseInt(request.getParameter("deficitF3"));
 
-        IssueRequest oldRequest = requestService.getRequestById(id);
+            double integralIndex =
+                    IssueRequest.calculateIntegralIndex(f1, f2, f3);
 
-        if (oldRequest == null) {
-            if (wantsJson(request)) {
-                writeJsonError(
-                        response,
-                        HttpServletResponse.SC_NOT_FOUND,
-                        "Заявку не знайдено"
-                );
-            } else {
-                response.sendRedirect("requests");
-            }
-            return;
+            IssueRequest issueRequest = new IssueRequest(
+                    id,
+                    userId,
+                    propertyId,
+                    status,
+                    f1,
+                    f2,
+                    f3,
+                    integralIndex
+            );
+
+            requestService.updateRequest(issueRequest);
+
+            sendAfterChange(request, response);
+
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write(
+                    "{\"error\":\"" + e.getMessage() + "\"}"
+            );
+
+        } catch (IllegalStateException e) {
+            response.setStatus(HttpServletResponse.SC_CONFLICT);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write(
+                    "{\"error\":\"" + e.getMessage() + "\"}"
+            );
+
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write(
+                    "{\"error\":\"Server error: " + e.getMessage() + "\"}"
+            );
         }
-
-        RequestState oldStatus = oldRequest.getRequestStatus();
-
-
-        if (oldStatus != status) {
-            boolean allowed = switch (oldStatus) {
-                case CREATED ->
-                        status == RequestState.APPROVED
-                                || status == RequestState.CANCELLED;
-
-                case APPROVED ->
-                        status == RequestState.PUBLISHED
-                                || status == RequestState.CANCELLED;
-
-                case PUBLISHED ->
-                        status == RequestState.RETURNED;
-
-                case RETURNED, CANCELLED -> false;
-            };
-
-            if (!allowed) {
-                String message = "Не можна змінити статус з "
-                        + oldStatus + " на " + status;
-
-                if (wantsJson(request)) {
-                    writeJsonError(
-                            response,
-                            HttpServletResponse.SC_CONFLICT,
-                            message
-                    );
-                } else {
-                    response.sendRedirect(
-                            "index.jsp?tab=requests&error=invalid_status"
-                    );
-                }
-
-                return;
-            }
-        }
-
-
-        // Check whether the property is already issued
-        if (status == RequestState.PUBLISHED
-                && oldStatus != RequestState.PUBLISHED) {
-
-            PropertyItem item = propertyService.getPropertyById(propertyId);
-
-            boolean alreadyPublished =
-                    requestService.isPropertyPublishedInAnotherRequest(propertyId, id);
-
-            if (item == null || alreadyPublished
-                    || item.getStatusItem() == ItemState.UNAVAILABLE) {
-
-                if (wantsJson(request)) {
-                    writeJsonError(
-                            response,
-                            HttpServletResponse.SC_CONFLICT,
-                            "Товар наразі недоступний"
-                    );
-                } else {
-                    response.sendRedirect(
-                            "index.jsp?tab=requests&error=property_unavailable"
-                    );
-                }
-
-                return;
-            }
-        }
-
-        IssueRequest issueRequest = new IssueRequest(
-                id,
-                userId,
-                propertyId,
-                status,
-                f1,
-                f2,
-                f3,
-                IssueRequest.calculateIntegralIndex(f1, f2, f3)
-        );
-
-        requestService.updateRequest(issueRequest);
-
-        PropertyItem item = propertyService.getPropertyById(propertyId);
-
-        List<Transfer> transfers = transferService.getAllTransfers();
-
-        if (status == RequestState.APPROVED
-                && oldStatus != RequestState.APPROVED) {
-
-            boolean transferExists = transfers.stream()
-                    .anyMatch(transfer ->
-                            transfer.getRequestId() == id
-                                    && transfer.getTransferDate() == null
-                                    && transfer.getReturnDate() == null
-                    );
-
-            if (!transferExists) {
-                Transfer transfer = new Transfer(
-                        0,
-                        id,
-                        (LocalDate) null,
-                        null,
-                        ""
-                );
-
-                transferService.addTransfer(transfer);
-            }
-        }
-
-        if (status == RequestState.PUBLISHED
-                && oldStatus != RequestState.PUBLISHED) {
-
-            Transfer transfer = transfers.stream()
-                    .filter(t ->
-                            t.getRequestId() == id
-                                    && t.getReturnDate() == null
-                    )
-                    .findFirst()
-                    .orElse(null);
-
-            if (transfer == null) {
-                transfer = new Transfer(
-                        0,
-                        id,
-                        LocalDate.now(),
-                        null,
-                        ""
-                );
-
-                transferService.addTransfer(transfer);
-            } else if (transfer.getTransferDate() == null) {
-                transfer.setTransferDate(LocalDate.now());
-                transferService.updateTransfer(transfer);
-            }
-
-            if (item != null) {
-                item.setStatusItem(ItemState.UNAVAILABLE);
-                propertyService.updateProperty(item);
-            }
-        }
-
-        if (status == RequestState.RETURNED
-                && oldStatus != RequestState.RETURNED) {
-
-            transfers.stream()
-                    .filter(t ->
-                            t.getRequestId() == id
-                                    && t.getTransferDate() != null
-                                    && t.getReturnDate() == null
-                    )
-                    .findFirst()
-                    .ifPresent(transfer -> {
-                        transfer.setReturnDate(LocalDate.now());
-                        transferService.updateTransfer(transfer);
-                    });
-
-            if (item != null) {
-                item.setStatusItem(ItemState.AVAILABLE);
-                propertyService.updateProperty(item);
-            }
-        }
-
-        sendAfterChange(request, response);
     }
 
     private void deleteRequest(HttpServletRequest request, HttpServletResponse response)
