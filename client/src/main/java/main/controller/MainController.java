@@ -14,18 +14,16 @@ import main.model.Transfer;
 import main.model.User;
 import main.status.ItemState;
 import main.status.RequestState;
+import main.service.CsvPropertyImporter;
+import main.service.TableFilterManager;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.logging.Logger;
 import javafx.stage.FileChooser;
 import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.ArrayList;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
-import java.util.Locale;
 
 public class MainController {
     private static final Logger logger = Logger.getLogger(MainController.class.getName());
@@ -112,6 +110,11 @@ public class MainController {
 
     private final HttpUniverPropertyClient client = new HttpUniverPropertyClient();
 
+    private final CsvPropertyImporter csvImporter =
+            new CsvPropertyImporter();
+
+    private TableFilterManager filterManager;
+
     @FXML
     public void initialize() {
         logger.info("Initializing MainController...");
@@ -120,10 +123,32 @@ public class MainController {
         propStatusCombo.setItems(FXCollections.observableArrayList(ItemState.values()));
         propStatusCombo.getSelectionModel().selectFirst();
 
-        reqStatusCombo.setItems(FXCollections.observableArrayList(RequestState.values()));
-        reqStatusCombo.getSelectionModel().selectFirst();
+        reqStatusCombo.setItems(
+                FXCollections.observableArrayList(RequestState.CREATED)
+        );
+        reqStatusCombo.setValue(RequestState.CREATED);
 
-        // 2. Налаштування колонок таблиць
+        // 2. Ініціалізація фільтрів
+        filterManager = new TableFilterManager(
+                requestTab,
+                userTab,
+                propertyTab,
+                transferTab,
+                filterFieldCombo,
+                searchField,
+                filterValueField,
+                filteredUsers,
+                filteredProperties,
+                filteredRequests,
+                filteredTransfers
+        );
+
+        filterManager.initialize();
+        filterManager.updateFilterOptions(
+                mainTabPane.getSelectionModel().getSelectedItem()
+        );
+
+        // 3. Налаштування колонок таблиць
         reqIdCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         reqUserCol.setCellValueFactory(new PropertyValueFactory<>("userId"));
         reqPropCol.setCellValueFactory(new PropertyValueFactory<>("propertyId"));
@@ -147,43 +172,36 @@ public class MainController {
         transReturnCol.setCellValueFactory(new PropertyValueFactory<>("returnDate"));
         transNotesCol.setCellValueFactory(new PropertyValueFactory<>("notes"));
 
+        // 4. Налаштування кнопок
         setupButtonBindings();
 
-        mainTabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
-            clearForm();
-            updateFormVisibility(newTab);
-            setupButtonBindings();
-        });
+        // 5. Обробка перемикання вкладок
+        mainTabPane.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldTab, newTab) -> {
+                    clearForm();
+                    updateFormVisibility(newTab);
+                    setupButtonBindings();
 
+                    filterManager.updateFilterOptions(newTab);
+                    filterManager.applyFilters();
+                });
+
+        // 6. Налаштування вибору записів
         setupSelectionListeners();
+
+        // 7. Завантаження даних
         loadAllData();
+
+        // 8. Відображення форми для активної вкладки
         updateFormVisibility(mainTabPane.getSelectionModel().getSelectedItem());
 
+        // 9. Прив'язка даних до таблиць
         userTable.setItems(filteredUsers);
         propertyTable.setItems(filteredProperties);
         requestTable.setItems(filteredRequests);
         transferTable.setItems(filteredTransfers);
 
-        searchField.textProperty().addListener(
-                (obs, oldValue, newValue) -> applyFilters()
-        );
-
-        filterValueField.textProperty().addListener(
-                (obs, oldValue, newValue) -> applyFilters()
-        );
-
-        filterFieldCombo.valueProperty().addListener(
-                (obs, oldValue, newValue) -> applyFilters()
-        );
-
-        mainTabPane.getSelectionModel().selectedItemProperty()
-                .addListener((obs, oldTab, newTab) -> {
-                    updateFilterOptions(newTab);
-                    applyFilters();
-                });
-
-        updateFilterOptions(mainTabPane.getSelectionModel().getSelectedItem());
-
+        // 10. Початкове налаштування панелі пошуку
         searchPanel.setVisible(false);
         searchPanel.setManaged(false);
     }
@@ -207,121 +225,9 @@ public class MainController {
         ));
     }
 
-    private void updateFilterOptions(Tab tab) {
-        if (tab == requestTab) {
-            filterFieldCombo.setItems(FXCollections.observableArrayList(
-                    "Усі поля", "ID", "ID користувача",
-                    "ID майна", "Статус", "Індекс"
-            ));
-        } else if (tab == userTab) {
-            filterFieldCombo.setItems(FXCollections.observableArrayList(
-                    "Усі поля", "ID", "ПІБ", "Роль", "Email"
-            ));
-        } else if (tab == propertyTab) {
-            filterFieldCombo.setItems(FXCollections.observableArrayList(
-                    "Усі поля", "ID", "Інвентарний номер",
-                    "Назва", "Категорія", "Статус"
-            ));
-        } else if (tab == transferTab) {
-            filterFieldCombo.setItems(FXCollections.observableArrayList(
-                    "Усі поля", "ID", "ID заявки",
-                    "Дата передачі", "Дата повернення", "Примітки"
-            ));
-        }
-
-        filterFieldCombo.getSelectionModel().selectFirst();
-    }
-
-    private boolean containsText(Object value, String text) {
-        return value != null
-                && String.valueOf(value).toLowerCase(Locale.ROOT)
-                .contains(text);
-    }
-
-    private boolean matches(String text, Object... values) {
-        for (Object value : values) {
-            if (containsText(value, text)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void applyFilters() {
-        String search = searchField.getText() == null
-                ? "" : searchField.getText().trim().toLowerCase(Locale.ROOT);
-
-        String field = filterFieldCombo.getValue();
-        String filter = filterValueField.getText() == null
-                ? "" : filterValueField.getText().trim().toLowerCase(Locale.ROOT);
-
-        filteredUsers.setPredicate(user ->
-                matches(search, user.getId(), user.getFullName(),
-                        user.getRole(), user.getEmail())
-                        && matchesFilter(field, filter,
-                        new String[]{"ID", "ПІБ", "Роль", "Email"},
-                        new Object[]{user.getId(), user.getFullName(),
-                                user.getRole(), user.getEmail()})
-        );
-
-        filteredProperties.setPredicate(item ->
-                matches(search, item.getId(), item.getInventoryNumber(),
-                        item.getName(), item.getCategory(), item.getStatusItem())
-                        && matchesFilter(field, filter,
-                        new String[]{"ID", "Інвентарний номер", "Назва",
-                                "Категорія", "Статус"},
-                        new Object[]{item.getId(), item.getInventoryNumber(),
-                                item.getName(), item.getCategory(), item.getStatusItem()})
-        );
-
-        filteredRequests.setPredicate(req ->
-                matches(search, req.getId(), req.getUserId(), req.getPropertyId(),
-                        req.getRequestStatus(), req.getIntegralIndex())
-                        && matchesFilter(field, filter,
-                        new String[]{"ID", "ID користувача", "ID майна",
-                                "Статус", "Індекс"},
-                        new Object[]{req.getId(), req.getUserId(),
-                                req.getPropertyId(), req.getRequestStatus(),
-                                req.getIntegralIndex()})
-        );
-
-        filteredTransfers.setPredicate(tr ->
-                matches(search, tr.getId(), tr.getRequestId(),
-                        tr.getTransferDate(), tr.getReturnDate(), tr.getNotes())
-                        && matchesFilter(field, filter,
-                        new String[]{"ID", "ID заявки", "Дата передачі",
-                                "Дата повернення", "Примітки"},
-                        new Object[]{tr.getId(), tr.getRequestId(),
-                                tr.getTransferDate(), tr.getReturnDate(), tr.getNotes()})
-        );
-    }
-
-    private boolean matchesFilter(
-            String selectedField,
-            String filter,
-            String[] fieldNames,
-            Object[] values) {
-
-        if (filter.isEmpty() || selectedField == null
-                || selectedField.equals("Усі поля")) {
-            return true;
-        }
-
-        for (int i = 0; i < fieldNames.length; i++) {
-            if (fieldNames[i].equals(selectedField)) {
-                return containsText(values[i], filter);
-            }
-        }
-
-        return true;
-    }
-
     @FXML
     private void handleResetFilters() {
-        searchField.clear();
-        filterValueField.clear();
-        filterFieldCombo.getSelectionModel().selectFirst();
-        applyFilters();
+        filterManager.resetFilters();
     }
 
     private void setupButtonBindings() {
@@ -559,7 +465,7 @@ public class MainController {
 
         reqUserIdField.clear(); reqPropIdField.clear();
         reqStatusCombo.setItems(
-                FXCollections.observableArrayList(RequestState.values())
+                FXCollections.observableArrayList(RequestState.CREATED)
         );
         reqStatusCombo.setValue(RequestState.CREATED);
         reqF1Field.clear(); reqF2Field.clear(); reqF3Field.clear();
@@ -570,39 +476,6 @@ public class MainController {
         propertyTable.getSelectionModel().clearSelection();
         requestTable.getSelectionModel().clearSelection();
         transferTable.getSelectionModel().clearSelection();
-    }
-
-    private List<String> parseCsvLine(String line, char delimiter) {
-        List<String> fields = new ArrayList<>();
-        StringBuilder field = new StringBuilder();
-        boolean quoted = false;
-
-        for (int i = 0; i < line.length(); i++) {
-            char ch = line.charAt(i);
-
-            if (ch == '"') {
-                if (quoted && i + 1 < line.length()
-                        && line.charAt(i + 1) == '"') {
-                    field.append('"');
-                    i++;
-                } else {
-                    quoted = !quoted;
-                }
-            } else if (ch == delimiter && !quoted) {
-                fields.add(field.toString());
-                field.setLength(0);
-            } else {
-                field.append(ch);
-            }
-        }
-
-        if (quoted) {
-            throw new IllegalArgumentException(
-                    "Незакриті лапки у CSV-рядку");
-        }
-
-        fields.add(field.toString());
-        return fields;
     }
 
     @FXML
@@ -624,90 +497,15 @@ public class MainController {
         Task<Integer> task = new Task<>() {
             @Override
             protected Integer call() throws Exception {
-                List<String> lines = Files.readAllLines(
-                        file.toPath(), StandardCharsets.UTF_8);
+                List<PropertyItem> items = csvImporter.readProperties(file);
 
-                if (!lines.isEmpty()) {
-                    lines.set(0, lines.get(0).replace("\uFEFF", ""));
-                }
-
-                List<String> dataLines = new ArrayList<>();
-                for (String line : lines) {
-                    if (!line.trim().isEmpty()) {
-                        dataLines.add(line);
-                    }
-                }
-
-                if (dataLines.isEmpty()) {
-                    throw new IllegalArgumentException("CSV-файл порожній");
-                }
-
-                char delimiter = dataLines.get(0).contains(";") ? ';' : ',';
-
-                String firstColumn = parseCsvLine(
-                        dataLines.get(0), delimiter).get(0).trim();
-
-                int startIndex = firstColumn.equalsIgnoreCase("inventoryNumber")
-                        || firstColumn.equalsIgnoreCase("inventory_number")
-                        || firstColumn.equalsIgnoreCase("інвентарний номер")
-                        ? 1 : 0;
-
-                int total = dataLines.size() - startIndex;
-
-                if (total <= 0) {
-                    throw new IllegalArgumentException(
-                            "CSV-файл не містить записів майна");
-                }
-
+                int total = items.size();
                 int imported = 0;
 
-                for (int i = startIndex; i < dataLines.size(); i++) {
+                for (PropertyItem item : items) {
                     if (isCancelled()) {
                         break;
                     }
-
-                    int rowNumber = i + 1;
-                    List<String> fields = parseCsvLine(
-                            dataLines.get(i), delimiter);
-
-                    if (fields.size() != 4) {
-                        throw new IllegalArgumentException(
-                                "Рядок " + rowNumber
-                                        + ": очікується 4 поля");
-                    }
-
-                    String inventoryNumber = fields.get(0).trim();
-                    String name = fields.get(1).trim();
-                    String category = fields.get(2).trim();
-                    String statusText = fields.get(3).trim();
-
-                    if (inventoryNumber.isEmpty()
-                            || name.isEmpty()
-                            || category.isEmpty()
-                            || statusText.isEmpty()) {
-                        throw new IllegalArgumentException(
-                                "Рядок " + rowNumber
-                                        + ": заповніть усі поля");
-                    }
-
-                    ItemState state;
-
-                    try {
-                        state = ItemState.valueOf(
-                                statusText.toUpperCase(java.util.Locale.ROOT));
-                    } catch (IllegalArgumentException ex) {
-                        throw new IllegalArgumentException(
-                                "Рядок " + rowNumber
-                                        + ": невідомий статус " + statusText);
-                    }
-
-                    PropertyItem item = new PropertyItem(
-                            0,
-                            inventoryNumber,
-                            name,
-                            category,
-                            state
-                    );
 
                     updateMessage("Імпорт майна: "
                             + (imported + 1) + " із " + total);
@@ -790,7 +588,7 @@ public class MainController {
                     allRequests.setAll(reqs);
                     allTransfers.setAll(trans);
 
-                    applyFilters();
+                    filterManager.applyFilters();
                 });
 
                 updateProgress(4, 4);

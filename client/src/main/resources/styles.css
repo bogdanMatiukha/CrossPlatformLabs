@@ -391,3 +391,62 @@
     -fx-font-weight: bold;
     -fx-padding: 8px 10px;
 }
+
+/* Scroll Bars */
+
+.scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 10px;
+    -fx-padding: 2px 2px 2px 2px;
+}
+
+.scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-pref-height: 10px;
+    -fx-padding: 2px 2px 2px 2px;
+}
+
+/* Track */
+
+.scroll-bar .track {
+    -fx-background-color: #f1f4f9;
+    -fx-background-radius: 10px;
+    -fx-border-color: transparent;
+}
+
+/* Thumb */
+
+.scroll-bar .thumb {
+    -fx-background-color: #cbd5e1;
+    -fx-background-radius: 10px;
+    -fx-background-insets: 0;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #94a3b8;
+}
+
+.scroll-bar .thumb:pressed {
+    -fx-background-color: #4778f5;
+}
+
+/* Hide arrows */
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-shape: "";
+    -fx-padding: 0;
+}
+
+/* Hide unnecessary corner */
+
+.scroll-bar:vertical .track,
+.scroll-bar:horizontal .track {
+    -fx-background-insets: 0;
+}
