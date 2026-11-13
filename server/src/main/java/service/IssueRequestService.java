@@ -20,10 +20,31 @@ import java.util.List;
 
 public class IssueRequestService {
 
-    private final IssueRequestDAO dao = new IssueRequestDAOImpl();
-    private final PropertyDAO propertyDAO = new PropertyDAOImpl();
-    private final TransferDAO transferDAO = new TransferDAOImpl();
-    private final UserDAO userDAO = new UserDAOImpl();
+    private final IssueRequestDAO dao;
+    private final PropertyDAO propertyDAO;
+    private final TransferDAO transferDAO;
+    private final UserDAO userDAO;
+
+    public IssueRequestService() {
+        this(
+                new IssueRequestDAOImpl(),
+                new PropertyDAOImpl(),
+                new TransferDAOImpl(),
+                new UserDAOImpl()
+        );
+    }
+
+    public IssueRequestService(
+            IssueRequestDAO dao,
+            PropertyDAO propertyDAO,
+            TransferDAO transferDAO,
+            UserDAO userDAO
+    ) {
+        this.dao = dao;
+        this.propertyDAO = propertyDAO;
+        this.transferDAO = transferDAO;
+        this.userDAO = userDAO;
+    }
 
     public List<IssueRequest> getAllRequests() {
         return dao.getAllRequests();

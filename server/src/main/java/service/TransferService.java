@@ -9,7 +9,15 @@ import java.util.List;
 
 public class TransferService {
 
-    private final TransferDAO dao = new TransferDAOImpl();
+    private final TransferDAO dao;
+
+    public TransferService() {
+        this(new TransferDAOImpl());
+    }
+
+    public TransferService(TransferDAO dao) {
+        this.dao = dao;
+    }
 
     public List<Transfer> getAllTransfers() {
         return dao.getAllTransfers();
